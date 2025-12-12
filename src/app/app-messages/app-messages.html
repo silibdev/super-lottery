@@ -1,0 +1,12 @@
+@if (messages().length) {
+  <div class="messages-container">
+    @for (message of messages(); track message.description) {
+      <p-message
+        [severity]="message.type"
+        [closable]="true"
+        (onClose)="closeMessage(message)"
+      >{{ message.description }}
+      </p-message>
+    }
+  </div>
+}
