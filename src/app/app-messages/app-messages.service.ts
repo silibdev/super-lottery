@@ -21,10 +21,17 @@ export class AppMessagesService {
     return this.messages;
   }
 
-  showHttpError() {
-    return (error: any) => {
-      this.showMessage({ type: 'error', description: error.message || 'Unknown error' });
-      throw error;
+  showHttpError(options?: { dontThrow?: boolean }) {
+    return async (error: any) => {
+      if (error instanceof Response) {
+        const body = await error.json();
+        this.showMessage({ type: 'error', description: body.data || 'No description provided' });
+      } else {
+        this.showMessage({ type: 'error', description: 'Unknown error' });
+      }
+      if (!options?.dontThrow) {
+        throw error;
+      }
     };
   }
 }

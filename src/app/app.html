@@ -1,8 +1,14 @@
 <p-mega-menu [model]="menuItems">
   <ng-template #start>
-    <p-button label="Super-Lottery" link routerLink="home"/>
+    <p-button
+      label="Super-Lottery"
+      link
+      routerLink="home"
+    />
   </ng-template>
 </p-mega-menu>
+
+<app-app-messages/>
 
 <div class="main-container">
   <router-outlet/>

@@ -3,15 +3,16 @@ import { RouterLink, RouterOutlet } from '@angular/router';
 import { MegaMenu } from 'primeng/megamenu';
 import { MegaMenuItem } from 'primeng/api';
 import { Button } from 'primeng/button';
+import { AppMessages } from './app-messages/app-messages';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, MegaMenu, Button, RouterLink],
+  imports: [RouterOutlet, MegaMenu, Button, RouterLink, AppMessages],
   templateUrl: './app.html',
-  styleUrl: './app.scss'
+  styleUrl: './app.scss',
 })
 export class App {
   protected readonly menuItems: MegaMenuItem[] = [
-    {label: 'Manage Lottery', routerLink: ['/lotteries/manage']},
+    { label: 'Manage Lottery', routerLink: ['/lotteries/manage'] },
   ];
 }
