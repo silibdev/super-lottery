@@ -1,13 +1,31 @@
 <h1>Manage Lotteries</h1>
 <div class="actions-container">
-  <p-button label="Create Lottery" icon="pi pi-plus" (click)="createNewLottery()"></p-button>
+  <p-button label="Create Lottery" icon="pi pi-plus" (click)="openCreateLottery()"></p-button>
 </div>
+<p-dialog
+  [visible]="createLotteryDialogVisible()"
+  header="Create Lottery"
+  [modal]="true"
+  [dismissableMask]="false"
+  [draggable]="false"
+  [resizable]="false"
+>
+  <div>
+    <p-float-label variant="in">
+      <label>Name</label>
+      <input pInputText [formControl]="nameControl"/>
+    </p-float-label>
+  </div>
+  <ng-template #footer>
+    <p-button label="Create" (click)="createNewLottery()"/>
+  </ng-template>
+</p-dialog>
+
 @if (lotteries.isLoading()) {
   <div class="loader-container">
     <p-progress-spinner ariaLabel="loading"/>
   </div>
-}
-@if (lotteries.hasValue()) {
+} @else if (lotteries.hasValue()) {
   <div class="lotteries-container">
     @for (lottery of lotteries.value(); track lottery.name) {
       <p-card class="lottery">

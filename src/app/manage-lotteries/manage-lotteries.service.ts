@@ -1,21 +1,16 @@
 import { Injectable } from '@angular/core';
-import { delay, of } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ManageLotteriesService {
-  loadLotteries() {
-    return of([
-        {
-          name: 'Lottery 1',
-          participants: 100,
-          extractions: 2,
-          lastExtraction: '2021-01-01 12:00:00'
-        }
-      ]
-    ).pipe(
-      delay(3000)
-    )
+  async loadLotteries() {
+    const res = await fetch('api/lotteries');
+    return await res.json();
+  }
+
+  async createLottery(name: string) {
+    const res = await fetch('api/lotteries', {method: 'POST', body: JSON.stringify({name})});
+    return await res.json();
   }
 }
