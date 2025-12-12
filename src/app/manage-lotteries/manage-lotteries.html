@@ -1,1 +1,26 @@
 <h1>Manage Lotteries</h1>
+<div class="actions-container">
+  <p-button label="Create Lottery" icon="pi pi-plus" (click)="createNewLottery()"></p-button>
+</div>
+@if (lotteries.isLoading()) {
+  <div class="loader-container">
+    <p-progress-spinner ariaLabel="loading"/>
+  </div>
+}
+@if (lotteries.hasValue()) {
+  <div class="lotteries-container">
+    @for (lottery of lotteries.value(); track lottery.name) {
+      <p-card class="lottery">
+        <ng-template #title>
+          {{ lottery.name }}
+        </ng-template>
+        <div>Part. {{ lottery.participants }}</div>
+        <div>Extr. {{ lottery.extractions }}</div>
+        <ng-template #footer>
+          {{ lottery.lastExtraction || '' }}
+        </ng-template>
+      </p-card>
+    }
+  </div>
+}
+

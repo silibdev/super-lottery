@@ -1,0 +1,12 @@
+.actions-container {
+  padding-bottom: 1rem;
+}
+
+.lotteries-container {
+  display: grid;
+  row-gap: .5rem;
+
+  .lottery {
+    width: 16rem;
+  }
+}
