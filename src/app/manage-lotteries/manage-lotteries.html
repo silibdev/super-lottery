@@ -1,20 +1,22 @@
-<h1>Manage Lotteries</h1>
+<h1>Owned Lotteries</h1>
 <div class="actions-container">
   <p-button label="Create Lottery" icon="pi pi-plus" (click)="openCreateLottery()"></p-button>
 </div>
 <p-dialog
-  [visible]="createLotteryDialogVisible()"
+  [(visible)]="createLotteryDialogVisible"
   header="Create Lottery"
   [modal]="true"
   [dismissableMask]="false"
   [draggable]="false"
   [resizable]="false"
+
 >
   <div>
-    <p-float-label variant="in">
+    <p-float-label>
       <label>Name</label>
       <input pInputText [formControl]="nameControl"/>
     </p-float-label>
+    <p-message severity="secondary" size="small" variant="simple">Only letters, numbers and '-'</p-message>
   </div>
   <ng-template #footer>
     <p-button label="Create" [loading]="createNewLotteryLoading" (click)="createNewLottery()"/>

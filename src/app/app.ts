@@ -13,6 +13,6 @@ import { AppMessages } from './app-messages/app-messages';
 })
 export class App {
   protected readonly menuItems: MegaMenuItem[] = [
-    { label: 'Manage Lottery', routerLink: ['/lotteries/manage'] },
+    { label: 'Owned Lotteries', routerLink: ['/lotteries/manage'] },
   ];
 }

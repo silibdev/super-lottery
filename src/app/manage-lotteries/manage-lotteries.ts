@@ -1,4 +1,4 @@
-import { Component, inject, resource, signal } from '@angular/core';
+import { Component, inject, resource } from '@angular/core';
 import { Button } from 'primeng/button';
 import { ManageLotteriesService } from './manage-lotteries.service';
 import { Card } from 'primeng/card';
@@ -8,10 +8,20 @@ import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { FloatLabel } from 'primeng/floatlabel';
 import { InputText } from 'primeng/inputtext';
 import { AppMessagesService } from '../app-messages/app-messages.service';
+import { Message } from 'primeng/message';
 
 @Component({
   selector: 'app-manage-lotteries',
-  imports: [Button, Card, ProgressSpinner, Dialog, FloatLabel, ReactiveFormsModule, InputText],
+  imports: [
+    Button,
+    Card,
+    ProgressSpinner,
+    Dialog,
+    FloatLabel,
+    ReactiveFormsModule,
+    InputText,
+    Message,
+  ],
   templateUrl: './manage-lotteries.html',
   styleUrl: './manage-lotteries.scss',
 })
@@ -20,9 +30,10 @@ export class ManageLotteries {
   private appMessagesService = inject(AppMessagesService);
   protected readonly nameControl = new FormControl('', {
     nonNullable: true,
-    validators: Validators.required,
+    validators: [Validators.required, Validators.pattern(/^[A-Za-z0-9]+(-[A-Za-z0-9]+)*$/)],
   });
-  protected createLotteryDialogVisible = signal(false);
+  protected createLotteryDialogVisible = false;
+  protected createNewLotteryLoading = false;
 
   protected readonly lotteries = resource({
     loader: async () => {
@@ -32,20 +43,19 @@ export class ManageLotteries {
       return resp.data;
     },
   });
-  protected createNewLotteryLoading = signal(false);
 
   openCreateLottery() {
-    this.createLotteryDialogVisible.set(true);
+    this.createLotteryDialogVisible = true;
     this.nameControl.reset();
   }
 
   async createNewLottery() {
-    this.createNewLotteryLoading.set(true);
+    this.createNewLotteryLoading = true;
     await this.manageLotteriesService
       .createLottery(this.nameControl.value)
       .catch(this.appMessagesService.showHttpError({ dontThrow: true }));
-    this.createNewLotteryLoading.set(false);
-    this.createLotteryDialogVisible.set(false);
+    this.createNewLotteryLoading = false;
+    this.createLotteryDialogVisible = false;
     this.lotteries.reload();
   }
 }

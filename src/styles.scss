@@ -5,3 +5,11 @@
   display: flex;
   justify-content: center;
 }
+
+p-float-label {
+  margin-top: 1.3rem;
+
+  + p-message {
+    margin-top: 0.25rem;
+  }
+}
