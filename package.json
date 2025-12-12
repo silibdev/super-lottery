@@ -12,6 +12,7 @@
   "prettier": {
     "printWidth": 100,
     "singleQuote": true,
+    "singleAttributePerLine": true,
     "overrides": [
       {
         "files": "*.html",
@@ -44,6 +45,7 @@
     "@angular/compiler-cli": "^21.0.0",
     "jsdom": "^27.1.0",
     "netlify-cli": "^23.12.3",
+    "prettier": "3.7.4",
     "typescript": "~5.9.2",
     "vitest": "^4.0.8"
   }
