@@ -1,6 +1,17 @@
 export interface LotteryInfo {
-  name: string,
-  participants: number,
-  extractions: number,
-  lastExtraction?: string
+  name: string;
+  participants: number;
+  extractions: number;
+  lastExtraction?: string;
+  nextExtraction?: string;
+}
+
+export interface LotteryOwner {
+  id: string;
+  lotteries: string[];
+}
+
+export interface AppMessage {
+  type: 'success' | 'info' | 'warn' | 'error' | 'secondary' | 'contrast';
+  description: string;
 }
