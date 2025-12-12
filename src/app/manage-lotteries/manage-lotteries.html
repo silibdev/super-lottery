@@ -17,7 +17,7 @@
     </p-float-label>
   </div>
   <ng-template #footer>
-    <p-button label="Create" (click)="createNewLottery()"/>
+    <p-button label="Create" [loading]="createNewLotteryLoading" (click)="createNewLottery()"/>
   </ng-template>
 </p-dialog>
 
@@ -30,12 +30,13 @@
     @for (lottery of lotteries.value(); track lottery.name) {
       <p-card class="lottery">
         <ng-template #title>
-          {{ lottery.name }}
+          <span>{{ lottery.name }}</span><span># {{ lottery.extractions }}</span>
         </ng-template>
-        <div>Part. {{ lottery.participants }}</div>
-        <div>Extr. {{ lottery.extractions }}</div>
+        <div><span class="pi pi-arrow-right"></span> {{ lottery.lastExtraction || '' }}</div>
+        <div><span class="pi pi-arrow-left"></span> {{ lottery.nextExtraction || '' }}</div>
         <ng-template #footer>
-          {{ lottery.lastExtraction || '' }}
+          <span class="users"><span class="pi pi-users"></span> {{ lottery.participants }}</span>
+          <p-button icon="pi pi-cog" [size]="'small'"/>
         </ng-template>
       </p-card>
     }
