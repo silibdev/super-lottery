@@ -3,7 +3,8 @@
   <p-button label="Create Lottery" icon="pi pi-plus" (click)="openCreateLottery()"></p-button>
 </div>
 <p-dialog
-  [(visible)]="createLotteryDialogVisible"
+  [visible]="createLotteryDialogVisible()"
+  (visibleChange)="createLotteryDialogVisible.set($event)"
   header="Create Lottery"
   [modal]="true"
   [dismissableMask]="false"
@@ -19,7 +20,7 @@
     <p-message severity="secondary" size="small" variant="simple">Only letters, numbers and '-'</p-message>
   </div>
   <ng-template #footer>
-    <p-button label="Create" [loading]="createNewLotteryLoading" (click)="createNewLottery()"/>
+    <p-button label="Create" [loading]="createNewLotteryLoading()" (click)="createNewLottery()"/>
   </ng-template>
 </p-dialog>
 
@@ -32,10 +33,10 @@
     @for (lottery of lotteries.value(); track lottery.name) {
       <p-card class="lottery">
         <ng-template #title>
-          <span>{{ lottery.name }}</span><span># {{ lottery.extractions }}</span>
+          <span>{{ lottery.name }}</span><span># {{ lottery | countExtractions }}</span>
         </ng-template>
-        <div><span class="pi pi-arrow-right"></span> {{ lottery.lastExtraction || '' }}</div>
-        <div><span class="pi pi-arrow-left"></span> {{ lottery.nextExtraction || '' }}</div>
+        <div><span class="pi pi-arrow-right"></span> {{ lottery | nextExtractionTime }}</div>
+        <div><span class="pi pi-arrow-left"></span> {{ lottery | lastExtractionTime }}</div>
         <ng-template #footer>
           <span class="users"><span class="pi pi-users"></span> {{ lottery.participants }}</span>
           <p-button icon="pi pi-cog" [size]="'small'" routerLink="/lotteries/manage/{{ lottery.name }}"/>

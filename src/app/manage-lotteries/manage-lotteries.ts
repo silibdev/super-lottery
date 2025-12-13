@@ -1,4 +1,4 @@
-import { Component, inject, resource } from '@angular/core';
+import { Component, inject, Pipe, PipeTransform, resource, signal } from '@angular/core';
 import { Button } from 'primeng/button';
 import { ManageLotteriesService } from './manage-lotteries.service';
 import { Card } from 'primeng/card';
@@ -10,6 +10,47 @@ import { InputText } from 'primeng/inputtext';
 import { AppMessagesService } from '../app-messages/app-messages.service';
 import { Message } from 'primeng/message';
 import { RouterLink } from '@angular/router';
+import { LotteryInfo } from '../models';
+
+@Pipe({
+  name: 'lastExtractionTime',
+  standalone: true,
+})
+export class LastExtractionTimePipe implements PipeTransform {
+  transform(lottery: LotteryInfo): string {
+    const lastExtractionTime = lottery.previousExtractions
+      .sort((a, b) => a.extractionTime.localeCompare(b.extractionTime))
+      .pop()?.extractionTime;
+    if (lastExtractionTime) {
+      return new Date(lastExtractionTime).toLocaleString();
+    }
+    return '';
+  }
+}
+
+@Pipe({
+  name: 'nextExtractionTime',
+  standalone: true,
+})
+export class NextExtractionTimePipe implements PipeTransform {
+  transform(lottery: LotteryInfo): string {
+    const extractionTime = lottery.nextExtraction?.extractionTime;
+    if (extractionTime) {
+      return new Date(extractionTime).toLocaleString();
+    }
+    return '';
+  }
+}
+
+@Pipe({
+  name: 'countExtractions',
+  standalone: true,
+})
+export class CountExtractionsPipe implements PipeTransform {
+  transform(lottery: LotteryInfo): number {
+    return lottery.previousExtractions.length;
+  }
+}
 
 @Component({
   selector: 'app-manage-lotteries',
@@ -23,6 +64,9 @@ import { RouterLink } from '@angular/router';
     InputText,
     Message,
     RouterLink,
+    LastExtractionTimePipe,
+    NextExtractionTimePipe,
+    CountExtractionsPipe,
   ],
   templateUrl: './manage-lotteries.html',
   styleUrl: './manage-lotteries.scss',
@@ -34,8 +78,8 @@ export class ManageLotteries {
     nonNullable: true,
     validators: [Validators.required, Validators.pattern(/^[A-Za-z0-9]+(-[A-Za-z0-9]+)*$/)],
   });
-  protected createLotteryDialogVisible = false;
-  protected createNewLotteryLoading = false;
+  protected createLotteryDialogVisible = signal(false);
+  protected createNewLotteryLoading = signal(false);
 
   protected readonly lotteries = resource({
     loader: async () => {
@@ -47,17 +91,17 @@ export class ManageLotteries {
   });
 
   openCreateLottery() {
-    this.createLotteryDialogVisible = true;
+    this.createLotteryDialogVisible.set(true);
     this.nameControl.reset();
   }
 
   async createNewLottery() {
-    this.createNewLotteryLoading = true;
+    this.createNewLotteryLoading.set(true);
     await this.manageLotteriesService
       .createLottery(this.nameControl.value)
       .catch(this.appMessagesService.showHttpError({ dontThrow: true }));
-    this.createNewLotteryLoading = false;
-    this.createLotteryDialogVisible = false;
+    this.createNewLotteryLoading.set(false);
+    this.createLotteryDialogVisible.set(false);
     this.lotteries.reload();
   }
 }
