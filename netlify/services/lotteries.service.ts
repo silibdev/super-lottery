@@ -1,12 +1,17 @@
-import { AppError, getLotteriesOwnersStore, getLotteriesParticipantStore, getLotteriesStore } from '../utils';
+import {
+  AppError,
+  getLotteriesOwnersStore,
+  getLotteriesParticipantStore,
+  getLotteriesStore,
+} from '../utils';
 import {
   ExtractionInfo,
   LotteriesParticipant,
   LotteryInfo,
   LotteryInfoForParticipant,
-  LotteryOwner
+  LotteryOwner,
 } from '../../src/app/models';
-import { addMinutes, isBefore } from 'date-fns';
+import { addMinutes, isAfter, isBefore } from 'date-fns';
 
 const LOTTERIES_STORE = getLotteriesStore();
 const LOTTERIES_PARTICIPANT_STORE = getLotteriesParticipantStore();
@@ -95,17 +100,7 @@ export const LotteriesService = {
       );
     }
 
-    if (extractionInfo.winningNumbers.length !== 10) {
-      throw new AppError(
-        400,
-        `Invalid winning numbers length ${extractionInfo.winningNumbers.length}. It must be 10 numbers`,
-      );
-    }
-
-    if (new Set(extractionInfo.winningNumbers).size !== 10) {
-      throw new AppError(400, `Invalid winning numbers. They must be unique`);
-    }
-
+    extractionInfo.winningNumbers = this._validateNumbers(extractionInfo.winningNumbers!);
     lottery.nextExtraction = extractionInfo;
 
     await LOTTERIES_STORE.setJSON(lotteryId, lottery);
@@ -125,6 +120,18 @@ export const LotteriesService = {
       }
       throw e;
     }
+  },
+
+  _validateNumbers(numbers: number[]) {
+    if (numbers!.length !== 10) {
+      throw new AppError(400, `Invalid numbers length ${numbers!.length}. It must be 10.`);
+    }
+
+    if (new Set(numbers).size !== 10) {
+      throw new AppError(400, `Invalid winning numbers. They must be unique.`);
+    }
+
+    return numbers.sort();
   },
 
   async joinLottery({ clientId, lotteryName }: { clientId: string; lotteryName: any }) {
@@ -177,6 +184,19 @@ export const LotteriesService = {
     return {
       ...lotteryForParticipant,
       nextExtraction: lottery.nextExtraction,
+      previousExtractions: lottery.previousExtractions.map((extraction) => {
+        const participantExtraction = lotteryForParticipant.previousExtractions?.find(
+          (pe) => pe.extractionId === extraction.extractionTime,
+        );
+        if (!participantExtraction) {
+          return {
+            extractionId: extraction.extractionTime,
+            chosenNumbers: [],
+          };
+        } else {
+          return participantExtraction;
+        }
+      }),
     };
   },
 
@@ -201,7 +221,7 @@ export const LotteriesService = {
   }: {
     clientId: string;
     lotteryId: string;
-    chosenNumbers: any;
+    chosenNumbers: number[];
   }) {
     const participant: LotteriesParticipant = await this._getLotteriesParticipant(clientId);
 
@@ -212,7 +232,7 @@ export const LotteriesService = {
       return Response.json({ data: `You did not joined lottery ${lotteryId}` }, { status: 403 });
     }
 
-    lotteryForParticipant.chosenNumbers = chosenNumbers;
+    lotteryForParticipant.chosenNumbers = this._validateNumbers(chosenNumbers);
     lotteryForParticipant.lastUpdateChosenNumbers = new Date().toISOString();
 
     await LOTTERIES_PARTICIPANT_STORE.setJSON(clientId, participant);
@@ -286,5 +306,35 @@ export const LotteriesService = {
     await LOTTERIES_PARTICIPANT_STORE.setJSON(clientId, participant);
 
     return participant;
+  },
+  async getExtraction({
+    lotteryId,
+    clientId,
+    extractionId,
+  }: {
+    lotteryId: string;
+    clientId: string;
+    extractionId: string;
+  }) {
+    const lottery = await this._getLottery(lotteryId);
+    const decodedExtractionId = atob(extractionId);
+
+    const extraction = lottery.previousExtractions.find(
+      (extraction) => extraction.extractionTime === decodedExtractionId,
+    );
+    if (!extraction) {
+      throw new AppError(404, `Extraction ${extractionId} not found`);
+    }
+
+    if (isAfter(new Date(), new Date(extraction.extractionTime))) {
+      return Response.json({ data: extraction });
+    } else {
+      return Response.json({
+        data: {
+          winningNumbers: extraction.winningNumbers,
+          extractionTime: extraction.extractionTime,
+        },
+      });
+    }
   },
 };

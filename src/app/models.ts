@@ -1,6 +1,6 @@
 export interface LotteryInfo {
   name: string;
-  owner: string;
+  owner?: string;
   participants: number;
   previousExtractions: ExtractionInfo[];
   nextExtraction?: ExtractionInfo;
@@ -9,7 +9,7 @@ export interface LotteryInfo {
 export interface ExtractionInfo {
   lotteryId?: string;
   extractionTime: string;
-  winningNumbers: number[];
+  winningNumbers?: number[];
 }
 
 export interface LotteriesParticipant {

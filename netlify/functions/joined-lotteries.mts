@@ -1,21 +1,12 @@
 import type { Config, Context } from '@netlify/functions';
-import { AppError, getClientId, getJoinedLotteryIdFromUrl } from '../utils';
+import { getClientId, getJoinedLotteryIdFromUrl, handleRequest } from '../utils';
 import { LotteriesService } from '../services/lotteries.service';
 
 export const config: Config = {
   path: ['/api/joined-lotteries', '/api/joined-lotteries/:lotteryId'],
 };
 
-export default async (req: Request, context: Context) => {
-  try {
-    return handler(req, context);
-  } catch (e) {
-    if (e instanceof AppError) {
-      return Response.json({ data: e.message }, { status: e.code });
-    }
-    throw e;
-  }
-};
+export default async (req: Request, context: Context) => handleRequest(req, context, handler);
 
 const handler = async (req: Request, context: Context) => {
   const clientId = getClientId(context);
