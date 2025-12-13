@@ -1,5 +1,6 @@
 import { getLotteriesOwnersStore, getLotteriesStore } from '../utils';
-import { LotteryInfo, LotteryOwner } from '../../src/app/models';
+import { ExtractionInfo, LotteryInfo, LotteryOwner } from '../../src/app/models';
+import { addMinutes, isBefore } from 'date-fns';
 
 export const LotteriesService = {
   async loadLotteries({ clientId }: { clientId: string }) {
@@ -43,7 +44,7 @@ export const LotteriesService = {
       name: lotteryName,
       owner: clientId,
       participants: 0,
-      extractions: 0,
+      previousExtractions: [],
     };
 
     await Promise.all([
@@ -60,6 +61,53 @@ export const LotteriesService = {
     if (!lottery || lottery.owner !== clientId) {
       return Response.json({ data: `You are not allowed to see ${lotteryId}` }, { status: 403 });
     }
+    return Response.json({ data: lottery });
+  },
+
+  async createNextExtraction({
+    extractionInfo,
+    clientId,
+    lotteryId,
+  }: {
+    extractionInfo: ExtractionInfo;
+    clientId: string;
+    lotteryId: string;
+  }) {
+    const lotteriesStore = getLotteriesStore();
+    const lottery: LotteryInfo = await lotteriesStore.get(lotteryId, { type: 'json' });
+    if (!lottery || lottery.owner !== clientId) {
+      return Response.json({ data: `You are not allowed to modify ${lotteryId}` }, { status: 403 });
+    }
+    lottery.owner = clientId;
+
+    const extractionTime = new Date(extractionInfo.extractionTime);
+    if (!extractionTime || isBefore(extractionTime, addMinutes(new Date(), 15))) {
+      return Response.json(
+        {
+          data: `Invalid extraction time. It must be at least 15 minutes in the future`,
+        },
+        { status: 400 },
+      );
+    }
+    if (extractionInfo.winningNumbers.length !== 10) {
+      return Response.json(
+        {
+          data: `Invalid winning numbers length ${extractionInfo.winningNumbers.length}. It must be 10 numbers`,
+        },
+        { status: 400 },
+      );
+    }
+    if (new Set(extractionInfo.winningNumbers).size !== 10) {
+      return Response.json(
+        {
+          data: `Invalid winning numbers. They must be unique`,
+        },
+        { status: 400 },
+      );
+    }
+    lottery.nextExtraction = extractionInfo;
+
+    await lotteriesStore.setJSON(lotteryId, lottery);
     return Response.json({ data: lottery });
   },
 };

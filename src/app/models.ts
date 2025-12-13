@@ -2,9 +2,14 @@ export interface LotteryInfo {
   name: string;
   owner: string;
   participants: number;
-  extractions: number;
-  lastExtraction?: string;
-  nextExtraction?: string;
+  previousExtractions: ExtractionInfo[];
+  nextExtraction?: ExtractionInfo;
+}
+
+export interface ExtractionInfo {
+  lotteryId?: string;
+  extractionTime: string;
+  winningNumbers: number[];
 }
 
 export interface LotteryOwner {

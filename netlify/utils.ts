@@ -15,3 +15,13 @@ export const getClientId = (context: Context) => {
   }
   return clientId;
 };
+
+export const getLotteryIdFromUrl = (url: string, context: Context) => {
+  console.log('context params', context.params);
+  const splitUrl = url.split('/');
+  if (splitUrl[3] === 'api' && splitUrl[4] === 'lotteries') {
+    return splitUrl[5];
+  } else {
+    return undefined;
+  }
+};
