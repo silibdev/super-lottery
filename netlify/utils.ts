@@ -27,3 +27,13 @@ export const getLotteryIdFromUrl = (url: string, context: Context) => {
     return undefined;
   }
 };
+
+export const getJoinedLotteryIdFromUrl = (url: string, context: Context) => {
+  console.log('context params', context.params);
+  const splitUrl = url.split('/');
+  if (splitUrl[3] === 'api' && splitUrl[4] === 'joined-lotteries') {
+    return splitUrl[5];
+  } else {
+    return undefined;
+  }
+};

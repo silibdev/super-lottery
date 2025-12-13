@@ -4,7 +4,7 @@ import {
   LotteriesParticipant,
   LotteryInfo,
   LotteryInfoForParticipant,
-  LotteryOwner
+  LotteryOwner,
 } from '../../src/app/models';
 import { addMinutes, isBefore } from 'date-fns';
 import { Store } from '@netlify/blobs';
@@ -178,14 +178,45 @@ export const LotteriesService = {
   },
 
   async _participantWithLotteriesInfo(lotteriesStore: Store, participant: LotteriesParticipant) {
-    await Promise.all(
+    const lotteriesInfo = await Promise.all(
       participant.joinedLotteries.map(async (lotteryForParticipant) => {
-        const lottery: LotteryInfo = await lotteriesStore.get(lotteryForParticipant.name, {
-          type: 'json',
-        });
-        lotteryForParticipant.nextExtraction = lottery.nextExtraction;
+        await this._lotteryWithNextExtractionInfo(lotteriesStore, lotteryForParticipant);
       }),
     );
-    return participant;
+    return { ...participant, joinedLotteries: lotteriesInfo };
+  },
+
+  async _lotteryWithNextExtractionInfo(
+    lotteriesStore: Store,
+    lotteryForParticipant: LotteryInfoForParticipant,
+  ) {
+    const lottery: LotteryInfo = await lotteriesStore.get(lotteryForParticipant.name, {
+      type: 'json',
+    });
+    return {
+      ...lotteryForParticipant,
+      nextExtraction: lottery.nextExtraction,
+    };
+  },
+
+  async getJoinedLottery({ lotteryId, clientId }: { lotteryId: string; clientId: string }) {
+    const participant: LotteriesParticipant = await getLotteriesParticipantStore().get(clientId, {
+      type: 'json',
+    });
+    if (!participant) {
+      return Response.json({ data: `Participant not found` }, { status: 404 });
+    }
+    const lotteryForParticipant = participant.joinedLotteries.find(
+      (lottery) => lottery.name === lotteryId,
+    );
+    if (!lotteryForParticipant) {
+      return Response.json({ data: `You did not joined lottery ${lotteryId}` }, { status: 403 });
+    }
+
+    const extendedLotteryInfo = await this._lotteryWithNextExtractionInfo(
+      getLotteriesStore(),
+      lotteryForParticipant,
+    );
+    return Response.json({ data: extendedLotteryInfo });
   },
 };

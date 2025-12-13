@@ -21,6 +21,7 @@ export interface LotteryInfoForParticipant {
   name: string;
   chosenNumbers: number[];
   nextExtraction?: ExtractionInfoForParticipant;
+  previousExtractions?: { extractionId: string; chosenNumbers: number[] }[];
 }
 
 export type ExtractionInfoForParticipant = Pick<ExtractionInfo, 'extractionTime' | 'lotteryId'>;
