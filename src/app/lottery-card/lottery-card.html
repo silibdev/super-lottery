@@ -1,0 +1,12 @@
+<p-card>
+  <ng-template #title>
+    <span>{{ lottery().name }}</span
+    ><span># {{ lottery() | countExtractions }}</span>
+  </ng-template>
+  <div><span class="pi pi-arrow-right"></span> {{ lottery() | nextExtractionTime }}</div>
+  <div><span class="pi pi-arrow-left"></span> {{ lottery() | lastExtractionTime }}</div>
+  <ng-template #footer>
+    <span class="users"><span class="pi pi-users"></span> {{ lottery().participants }}</span>
+    <ng-content></ng-content>
+  </ng-template>
+</p-card>

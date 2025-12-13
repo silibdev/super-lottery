@@ -1,7 +1,6 @@
-import { Component, inject, Pipe, PipeTransform, resource, signal } from '@angular/core';
+import { Component, inject, resource, signal } from '@angular/core';
 import { Button } from 'primeng/button';
 import { ManageLotteriesService } from './manage-lotteries.service';
-import { Card } from 'primeng/card';
 import { ProgressSpinner } from 'primeng/progressspinner';
 import { Dialog } from 'primeng/dialog';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -9,64 +8,21 @@ import { FloatLabel } from 'primeng/floatlabel';
 import { InputText } from 'primeng/inputtext';
 import { AppMessagesService } from '../app-messages/app-messages.service';
 import { Message } from 'primeng/message';
+import { LotteryCard } from '../lottery-card/lottery-card';
 import { RouterLink } from '@angular/router';
-import { LotteryInfo } from '../models';
-
-@Pipe({
-  name: 'lastExtractionTime',
-  standalone: true,
-})
-export class LastExtractionTimePipe implements PipeTransform {
-  transform(lottery: LotteryInfo): string {
-    const lastExtractionTime = lottery.previousExtractions
-      .sort((a, b) => a.extractionTime.localeCompare(b.extractionTime))
-      .pop()?.extractionTime;
-    if (lastExtractionTime) {
-      return new Date(lastExtractionTime).toLocaleString();
-    }
-    return '';
-  }
-}
-
-@Pipe({
-  name: 'nextExtractionTime',
-  standalone: true,
-})
-export class NextExtractionTimePipe implements PipeTransform {
-  transform(lottery: LotteryInfo): string {
-    const extractionTime = lottery.nextExtraction?.extractionTime;
-    if (extractionTime) {
-      return new Date(extractionTime).toLocaleString();
-    }
-    return '';
-  }
-}
-
-@Pipe({
-  name: 'countExtractions',
-  standalone: true,
-})
-export class CountExtractionsPipe implements PipeTransform {
-  transform(lottery: LotteryInfo): number {
-    return lottery.previousExtractions.length;
-  }
-}
 
 @Component({
   selector: 'app-manage-lotteries',
   imports: [
     Button,
-    Card,
     ProgressSpinner,
     Dialog,
     FloatLabel,
     ReactiveFormsModule,
     InputText,
     Message,
+    LotteryCard,
     RouterLink,
-    LastExtractionTimePipe,
-    NextExtractionTimePipe,
-    CountExtractionsPipe,
   ],
   templateUrl: './manage-lotteries.html',
   styleUrl: './manage-lotteries.scss',
