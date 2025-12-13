@@ -13,15 +13,25 @@
 
 .previous-extractions-container {
   display: flex;
-  gap: 1rem;
+  flex-direction: column;
+  gap: 2rem;
 
   .previous-extraction {
     flex: 1 0 100%;
 
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem;
+
     .time {
       font-weight: bold;
-      padding-right: 1rem;
-      width: 7rem;
+    }
+
+    div {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
     }
   }
 }

@@ -63,6 +63,16 @@ export class LotterySettings {
       throw new Error('Lottery ID not provided');
     },
   });
+
+  protected previousExtractions = computed(() => {
+    const lottery = this.lottery.value();
+    const previousExtractions = lottery?.previousExtractions || [];
+    return previousExtractions.map((e) => ({
+      extractionTime: new Date(e.extractionTime).toLocaleString(),
+      winningNumbers: e.winningNumbers.join(', '),
+    }));
+  });
+
   protected savingNextExtraction = signal(false);
 
   protected readonly nextExtractionForm = inject(FormBuilder).nonNullable.group({

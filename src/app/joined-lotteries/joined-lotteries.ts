@@ -21,7 +21,7 @@ class NextExtractionTimePipe implements PipeTransform {
     if (extractionTime) {
       return new Date(extractionTime).toLocaleString();
     }
-    return '';
+    return 'TBD';
   }
 }
 

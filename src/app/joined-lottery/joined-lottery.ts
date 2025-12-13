@@ -68,7 +68,7 @@ export class JoinedLottery {
     }
     const nextExtraction = lottery.nextExtraction;
     if (!nextExtraction) {
-      return '';
+      return 'TBD';
     }
     return new Date(nextExtraction.extractionTime).toLocaleString();
   });

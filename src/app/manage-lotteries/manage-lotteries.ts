@@ -21,7 +21,7 @@ class LastExtractionTimePipe implements PipeTransform {
     const lastExtractionTime = lottery.previousExtractions
       .sort((a, b) => a.extractionTime.localeCompare(b.extractionTime))
       .pop()?.extractionTime;
-    return lastExtractionTime ? new Date(lastExtractionTime).toLocaleString() : '';
+    return lastExtractionTime ? new Date(lastExtractionTime).toLocaleString() : 'None';
   }
 }
 
@@ -35,7 +35,7 @@ class NextExtractionTimePipe implements PipeTransform {
     if (extractionTime) {
       return new Date(extractionTime).toLocaleString();
     }
-    return '';
+    return 'TBD';
   }
 }
 

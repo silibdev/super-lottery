@@ -48,19 +48,19 @@
         />
       </form>
     </p-fieldset>
-    @let prevExtr = lottery.value()!.previousExtractions;
+    @let prevExtr = previousExtractions();
     @if (prevExtr && prevExtr.length) {
       <p-fieldset
-        class="p-pt-1"
         legend="Previous extractions"
         [toggleable]="true"
+        [collapsed]="true"
       >
         <div class="previous-extractions-container">
-          @for (extraction of lottery.value()!.previousExtractions;
+          @for (extraction of prevExtr;
             track extraction.extractionTime) {
             <div class="previous-extraction">
-              <div class="time">{{ extraction.extractionTime }}</div>
-              <div class="winning-numbers">{{ extraction.winningNumbers }}</div>
+              <div class="time"><span class="pi pi-clock"></span>{{ extraction.extractionTime }}</div>
+              <div class="winning-numbers"><span class="pi pi-trophy"></span>{{ extraction.winningNumbers }}</div>
             </div>
           }
         </div>

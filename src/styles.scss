@@ -1,29 +1,40 @@
 /* You can add global styles to this file, and also import other style files */
 @import "primeicons/primeicons.css";
 
-.loader-container {
-  display: flex;
-  justify-content: center;
-}
-
-p-float-label {
-  margin-top: 1.3rem;
-
-  + p-message {
-    margin-top: 0.25rem;
+app-root {
+  .loader-container {
+    display: flex;
+    justify-content: center;
   }
-}
 
-.actions-container {
-  padding-bottom: 1rem;
-}
+  p-float-label {
+    margin-top: 1.3rem;
 
-.lotteries-container {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
+    + p-message {
+      margin-top: 0.25rem;
+    }
+  }
 
-.lottery-card {
-  width: 16rem;
+  .actions-container {
+    padding-bottom: 1rem;
+  }
+
+  .lotteries-container {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .lottery-card {
+    width: 16rem;
+  }
+
+  p-fieldset + p-fieldset {
+    margin-top: 2rem;
+    display: block;
+  }
+
+  .p-fieldset-content {
+    padding-top: 0.5rem;
+  }
 }
