@@ -1,5 +1,5 @@
 import type { Config, Context } from '@netlify/functions';
-import { getClientId, getJoinedLotteryIdFromUrl } from '../utils';
+import { AppError, getClientId, getJoinedLotteryIdFromUrl } from '../utils';
 import { LotteriesService } from '../services/lotteries.service';
 
 export const config: Config = {
@@ -7,6 +7,17 @@ export const config: Config = {
 };
 
 export default async (req: Request, context: Context) => {
+  try {
+    return handler(req, context);
+  } catch (e) {
+    if (e instanceof AppError) {
+      return Response.json({ data: e.message }, { status: e.code });
+    }
+    throw e;
+  }
+};
+
+const handler = async (req: Request, context: Context) => {
   const clientId = getClientId(context);
   const lotteryId = getJoinedLotteryIdFromUrl(req.url, context);
 

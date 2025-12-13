@@ -37,3 +37,12 @@ export const getJoinedLotteryIdFromUrl = (url: string, context: Context) => {
     return undefined;
   }
 };
+
+export class AppError extends Error {
+  constructor(
+    public readonly code: number,
+    message: string,
+  ) {
+    super(message);
+  }
+}
