@@ -12,6 +12,19 @@ export interface ExtractionInfo {
   winningNumbers: number[];
 }
 
+export interface LotteriesParticipant {
+  participantId: string;
+  joinedLotteries: LotteryInfoForParticipant[];
+}
+
+export interface LotteryInfoForParticipant {
+  name: string;
+  chosenNumbers: number[];
+  nextExtraction?: ExtractionInfoForParticipant;
+}
+
+export type ExtractionInfoForParticipant = Pick<ExtractionInfo, 'extractionTime' | 'lotteryId'>;
+
 export interface LotteryOwner {
   id: string;
   lotteries: string[];

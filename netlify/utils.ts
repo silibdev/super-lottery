@@ -7,6 +7,8 @@ export const getLotteriesStore = () => getStore('lotteries');
 
 export const getLotteriesOwnersStore = () => getStore('lotteries-owners');
 
+export const getLotteriesParticipantStore = () => getStore('lotteries-participant');
+
 export const getClientId = (context: Context) => {
   let clientId = context.cookies.get(SUPER_LOTTERY_CLIENT_ID);
   if (!clientId) {

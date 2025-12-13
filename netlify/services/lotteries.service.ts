@@ -1,6 +1,13 @@
-import { getLotteriesOwnersStore, getLotteriesStore } from '../utils';
-import { ExtractionInfo, LotteryInfo, LotteryOwner } from '../../src/app/models';
+import { getLotteriesOwnersStore, getLotteriesParticipantStore, getLotteriesStore } from '../utils';
+import {
+  ExtractionInfo,
+  LotteriesParticipant,
+  LotteryInfo,
+  LotteryInfoForParticipant,
+  LotteryOwner
+} from '../../src/app/models';
 import { addMinutes, isBefore } from 'date-fns';
+import { Store } from '@netlify/blobs';
 
 export const LotteriesService = {
   async loadLotteries({ clientId }: { clientId: string }) {
@@ -109,5 +116,76 @@ export const LotteriesService = {
 
     await lotteriesStore.setJSON(lotteryId, lottery);
     return Response.json({ data: lottery });
+  },
+
+  async getJoinedLotteries({ clientId }: { clientId: string }) {
+    const lotteriesParticipantStore = getLotteriesParticipantStore();
+
+    const participant: LotteriesParticipant = await lotteriesParticipantStore.get(clientId, {
+      type: 'json',
+    });
+
+    if (!participant) {
+      return Response.json({ data: [] });
+    }
+
+    const participantWithLotteriesInfo = await this._participantWithLotteriesInfo(
+      getLotteriesStore(),
+      participant,
+    );
+
+    return Response.json({ data: participantWithLotteriesInfo.joinedLotteries });
+  },
+
+  async joinLottery({ clientId, lotteryName }: { clientId: string; lotteryName: any }) {
+    const lotteriesParticipantStore = getLotteriesParticipantStore();
+    const lotteriesStore = getLotteriesStore();
+    const lottery: LotteryInfo = await lotteriesStore.get(lotteryName, { type: 'json' });
+    if (!lottery) {
+      return Response.json({ data: `Lottery ${lotteryName} does not exist` }, { status: 404 });
+    }
+
+    let participant: LotteriesParticipant | undefined = await lotteriesParticipantStore.get(
+      clientId,
+      { type: 'json' },
+    );
+    if (!participant) {
+      participant = {
+        participantId: clientId,
+        joinedLotteries: [],
+      };
+    }
+
+    const lotteryForParticipant: LotteryInfoForParticipant = {
+      name: lotteryName,
+      chosenNumbers: [],
+    };
+
+    participant.joinedLotteries.push(lotteryForParticipant);
+    lottery.participants++;
+
+    await Promise.all([
+      lotteriesStore.setJSON(lottery.name, lottery),
+      lotteriesParticipantStore.setJSON(clientId, participant),
+    ]);
+
+    const participantWithLotteriesInfo = await this._participantWithLotteriesInfo(
+      lotteriesStore,
+      participant,
+    );
+
+    return Response.json({ data: participantWithLotteriesInfo });
+  },
+
+  async _participantWithLotteriesInfo(lotteriesStore: Store, participant: LotteriesParticipant) {
+    await Promise.all(
+      participant.joinedLotteries.map(async (lotteryForParticipant) => {
+        const lottery: LotteryInfo = await lotteriesStore.get(lotteryForParticipant.name, {
+          type: 'json',
+        });
+        lotteryForParticipant.nextExtraction = lottery.nextExtraction;
+      }),
+    );
+    return participant;
   },
 };
