@@ -1,6 +1,5 @@
-import { Component, inject, resource, signal } from '@angular/core';
+import { Component, inject, Pipe, PipeTransform, resource, signal } from '@angular/core';
 import { Button } from 'primeng/button';
-import { LotteryCard } from '../lottery-card/lottery-card';
 import { ProgressSpinner } from 'primeng/progressspinner';
 import { JoinedLotteriesService } from './joined-lotteries.service';
 import { AppMessagesService } from '../app-messages/app-messages.service';
@@ -8,18 +7,48 @@ import { Dialog } from 'primeng/dialog';
 import { FloatLabel } from 'primeng/floatlabel';
 import { FormControl, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { InputText } from 'primeng/inputtext';
+import { Card } from 'primeng/card';
+import { RouterLink } from '@angular/router';
+import { LotteryInfoForParticipant } from '../models';
+
+@Pipe({
+  name: 'nextExtractionTime',
+  standalone: true,
+})
+class NextExtractionTimePipe implements PipeTransform {
+  transform(lottery: LotteryInfoForParticipant): string {
+    const extractionTime = lottery.nextExtraction?.extractionTime;
+    if (extractionTime) {
+      return new Date(extractionTime).toLocaleString();
+    }
+    return '';
+  }
+}
+
+@Pipe({
+  name: 'chosenNumbers',
+  standalone: true,
+})
+class ChosenNumbersTimePipe implements PipeTransform {
+  transform(lottery: LotteryInfoForParticipant): string {
+    return lottery.chosenNumbers.join(', ');
+  }
+}
 
 @Component({
   selector: 'app-joined-lotteries',
   imports: [
     Button,
-    LotteryCard,
     ProgressSpinner,
     Dialog,
     FloatLabel,
     FormsModule,
     InputText,
     ReactiveFormsModule,
+    ChosenNumbersTimePipe,
+    Card,
+    RouterLink,
+    NextExtractionTimePipe,
   ],
   templateUrl: './joined-lotteries.html',
   styleUrl: './joined-lotteries.scss',

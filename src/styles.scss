@@ -13,3 +13,17 @@ p-float-label {
     margin-top: 0.25rem;
   }
 }
+
+.actions-container {
+  padding-bottom: 1rem;
+}
+
+.lotteries-container {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.lottery-card {
+  width: 16rem;
+}

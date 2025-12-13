@@ -1,0 +1,19 @@
+
+::ng-deep {
+  .p-card-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+
+    div {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+  }
+
+  .p-card-footer {
+    display: flex;
+    justify-content: flex-end;
+  }
+}

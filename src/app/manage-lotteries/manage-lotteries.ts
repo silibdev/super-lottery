@@ -1,4 +1,4 @@
-import { Component, inject, resource, signal } from '@angular/core';
+import { Component, inject, Pipe, PipeTransform, resource, signal } from '@angular/core';
 import { Button } from 'primeng/button';
 import { ManageLotteriesService } from './manage-lotteries.service';
 import { ProgressSpinner } from 'primeng/progressspinner';
@@ -8,8 +8,46 @@ import { FloatLabel } from 'primeng/floatlabel';
 import { InputText } from 'primeng/inputtext';
 import { AppMessagesService } from '../app-messages/app-messages.service';
 import { Message } from 'primeng/message';
-import { LotteryCard } from '../lottery-card/lottery-card';
 import { RouterLink } from '@angular/router';
+import { LotteryInfo } from '../models';
+import { Card } from 'primeng/card';
+
+@Pipe({
+  name: 'lastExtractionTime',
+  standalone: true,
+})
+class LastExtractionTimePipe implements PipeTransform {
+  transform(lottery: LotteryInfo): string {
+    const lastExtractionTime = lottery.previousExtractions
+      .sort((a, b) => a.extractionTime.localeCompare(b.extractionTime))
+      .pop()?.extractionTime;
+    return lastExtractionTime ? new Date(lastExtractionTime).toLocaleString() : '';
+  }
+}
+
+@Pipe({
+  name: 'nextExtractionTime',
+  standalone: true,
+})
+class NextExtractionTimePipe implements PipeTransform {
+  transform(lottery: LotteryInfo): string {
+    const extractionTime = lottery.nextExtraction?.extractionTime;
+    if (extractionTime) {
+      return new Date(extractionTime).toLocaleString();
+    }
+    return '';
+  }
+}
+
+@Pipe({
+  name: 'countExtractions',
+  standalone: true,
+})
+class CountExtractionsPipe implements PipeTransform {
+  transform(lottery: LotteryInfo): number {
+    return lottery.previousExtractions.length;
+  }
+}
 
 @Component({
   selector: 'app-manage-lotteries',
@@ -21,8 +59,11 @@ import { RouterLink } from '@angular/router';
     ReactiveFormsModule,
     InputText,
     Message,
-    LotteryCard,
     RouterLink,
+    Card,
+    CountExtractionsPipe,
+    LastExtractionTimePipe,
+    NextExtractionTimePipe,
   ],
   templateUrl: './manage-lotteries.html',
   styleUrl: './manage-lotteries.scss',

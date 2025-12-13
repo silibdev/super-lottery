@@ -28,8 +28,7 @@
       size="small"
       variant="simple"
     >Only letters, numbers and '-'
-    </p-message
-    >
+    </p-message>
   </div>
   <ng-template #footer>
     <p-button
@@ -47,13 +46,22 @@
 } @else if (lotteries.hasValue()) {
   <div class="lotteries-container">
     @for (lottery of lotteries.value(); track lottery.name) {
-      <app-lottery-card [lottery]="lottery">
-        <p-button
-          icon="pi pi-cog"
-          [size]="'small'"
-          routerLink="/lotteries/manage/{{ lottery.name }}"
-        />
-      </app-lottery-card>
+      <p-card class="lottery-card">
+        <ng-template #title>
+          <span>{{ lottery.name }}</span
+          ><span># {{ lottery | countExtractions }}</span>
+        </ng-template>
+        <div><span class="pi pi-arrow-right"></span> {{ lottery | nextExtractionTime }}</div>
+        <div><span class="pi pi-arrow-left"></span> {{ lottery | lastExtractionTime }}</div>
+        <ng-template #footer>
+          <span class="users"><span class="pi pi-users"></span> {{ lottery.participants }}</span>
+          <p-button
+            icon="pi pi-cog"
+            [size]="'small'"
+            routerLink="/lotteries/manage/{{ lottery.name }}"
+          />
+        </ng-template>
+      </p-card>
     }
   </div>
 }
