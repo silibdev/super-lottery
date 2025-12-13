@@ -1,7 +1,3 @@
-<link
-  rel="stylesheet"
-  href="lottery-settings.scss"
-/>
 @switch (lottery.status()) {
   @case ('loading') {
     <div class="loader-container">
@@ -9,15 +5,10 @@
     </div>
   }
   @case ('error') {
-    <p-button
-      label="You're drunk, go home!"
-      icon="pi pi-sparkles"
-      severity="warn"
-      routerLink="/home"
-    />
+    <app-go-home-button/>
   }
   @case ('resolved') {
-    <h1>{{ lottery.value()!.name }}</h1>
+    <h1>Lottery: {{ lottery.value()!.name }}</h1>
     <p-fieldset legend="Next extraction">
       <form
         class="next-extraction-container"

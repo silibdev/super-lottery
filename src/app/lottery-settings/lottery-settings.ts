@@ -1,5 +1,5 @@
 import { Component, computed, inject, resource, signal } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { LotterySettingsService } from './lottery-settings.service';
 import { ProgressSpinner } from 'primeng/progressspinner';
@@ -14,13 +14,13 @@ import { catchError, map, of } from 'rxjs';
 import { AsyncPipe } from '@angular/common';
 import { Fieldset } from 'primeng/fieldset';
 import { addMinutes } from 'date-fns';
+import { GoHomeButton } from '../go-home-button/go-home-button';
 
 @Component({
   selector: 'app-lottery-settings',
   imports: [
     ProgressSpinner,
     Button,
-    RouterLink,
     DatePicker,
     FloatLabel,
     Message,
@@ -28,6 +28,7 @@ import { addMinutes } from 'date-fns';
     ReactiveFormsModule,
     AsyncPipe,
     Fieldset,
+    GoHomeButton,
   ],
   templateUrl: './lottery-settings.html',
   styleUrl: './lottery-settings.scss',
