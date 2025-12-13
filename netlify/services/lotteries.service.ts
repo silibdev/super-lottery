@@ -1,26 +1,26 @@
-import { getLotteriesOwnersStore, getLotteriesParticipantStore, getLotteriesStore } from '../utils';
+import { AppError, getLotteriesOwnersStore, getLotteriesParticipantStore, getLotteriesStore } from '../utils';
 import {
   ExtractionInfo,
   LotteriesParticipant,
   LotteryInfo,
   LotteryInfoForParticipant,
-  LotteryOwner,
+  LotteryOwner
 } from '../../src/app/models';
 import { addMinutes, isBefore } from 'date-fns';
-import { Store } from '@netlify/blobs';
+
+const LOTTERIES_STORE = getLotteriesStore();
+const LOTTERIES_PARTICIPANT_STORE = getLotteriesParticipantStore();
+const LOTTERIES_OWNERS_STORE = getLotteriesOwnersStore();
 
 export const LotteriesService = {
   async loadLotteries({ clientId }: { clientId: string }) {
-    const lotteriesOwnersStore = getLotteriesOwnersStore();
-
-    const owner: LotteryOwner = await lotteriesOwnersStore.get(clientId, { type: 'json' });
+    const owner: LotteryOwner = await LOTTERIES_OWNERS_STORE.get(clientId, { type: 'json' });
     if (!owner) {
       return Response.json({ data: [] });
     }
 
-    const lotteriesStore = getLotteriesStore();
     const lotteries = await Promise.all(
-      owner.lotteries.map((lotteryId) => lotteriesStore.get(lotteryId, { type: 'json' })),
+      owner.lotteries.map((lotteryId) => this._getLottery(lotteryId)),
     );
     return Response.json({ data: lotteries });
   },
@@ -33,14 +33,20 @@ export const LotteriesService = {
       return Response.json({ data: `${lotteryName} is an invalid name` }, { status: 400 });
     }
 
-    const lotteriesStore = getLotteriesStore();
-    const foundLottery = await lotteriesStore.get(lotteryName);
-    if (foundLottery) {
-      return Response.json({ data: `Lottery ${lotteryName} already exists` }, { status: 400 });
+    try {
+      const foundLottery = await this._getLottery(lotteryName);
+      if (foundLottery) {
+        return Response.json({ data: `Lottery ${lotteryName} already exists` }, { status: 400 });
+      }
+    } catch (e) {
+      if (e instanceof AppError && e.code === 404) {
+        // it's ok, this is preferable
+      } else {
+        throw e;
+      }
     }
 
-    const lotteriesOwnersStore = getLotteriesOwnersStore();
-    let owner: LotteryOwner = await lotteriesOwnersStore.get(clientId, { type: 'json' });
+    let owner: LotteryOwner = await LOTTERIES_OWNERS_STORE.get(clientId, { type: 'json' });
     if (!owner) {
       owner = { id: clientId, lotteries: [] };
     }
@@ -55,19 +61,16 @@ export const LotteriesService = {
     };
 
     await Promise.all([
-      lotteriesOwnersStore.setJSON(clientId, owner),
-      lotteriesStore.setJSON(lotteryName, lottery),
+      LOTTERIES_OWNERS_STORE.setJSON(clientId, owner),
+      LOTTERIES_STORE.setJSON(lotteryName, lottery),
     ]);
 
     return Response.json({ data: 'ok' });
   },
 
   async getLottery({ lotteryId, clientId }: { lotteryId: string; clientId: string }) {
-    const lotteriesStore = getLotteriesStore();
-    const lottery: LotteryInfo = await lotteriesStore.get(lotteryId, { type: 'json' });
-    if (!lottery || lottery.owner !== clientId) {
-      return Response.json({ data: `You are not allowed to see ${lotteryId}` }, { status: 403 });
-    }
+    const lottery: LotteryInfo = await this._getLottery(lotteryId, clientId);
+
     return Response.json({ data: lottery });
   },
 
@@ -80,80 +83,65 @@ export const LotteriesService = {
     clientId: string;
     lotteryId: string;
   }) {
-    const lotteriesStore = getLotteriesStore();
-    const lottery: LotteryInfo = await lotteriesStore.get(lotteryId, { type: 'json' });
-    if (!lottery || lottery.owner !== clientId) {
-      return Response.json({ data: `You are not allowed to modify ${lotteryId}` }, { status: 403 });
-    }
+    const lottery: LotteryInfo = await this._getLottery(lotteryId, clientId);
+
     lottery.owner = clientId;
 
     const extractionTime = new Date(extractionInfo.extractionTime);
     if (!extractionTime || isBefore(extractionTime, addMinutes(new Date(), 15))) {
-      return Response.json(
-        {
-          data: `Invalid extraction time. It must be at least 15 minutes in the future`,
-        },
-        { status: 400 },
+      throw new AppError(
+        400,
+        `Invalid extraction time. It must be at least 15 minutes in the future`,
       );
     }
+
     if (extractionInfo.winningNumbers.length !== 10) {
-      return Response.json(
-        {
-          data: `Invalid winning numbers length ${extractionInfo.winningNumbers.length}. It must be 10 numbers`,
-        },
-        { status: 400 },
+      throw new AppError(
+        400,
+        `Invalid winning numbers length ${extractionInfo.winningNumbers.length}. It must be 10 numbers`,
       );
     }
+
     if (new Set(extractionInfo.winningNumbers).size !== 10) {
-      return Response.json(
-        {
-          data: `Invalid winning numbers. They must be unique`,
-        },
-        { status: 400 },
-      );
+      throw new AppError(400, `Invalid winning numbers. They must be unique`);
     }
+
     lottery.nextExtraction = extractionInfo;
 
-    await lotteriesStore.setJSON(lotteryId, lottery);
+    await LOTTERIES_STORE.setJSON(lotteryId, lottery);
     return Response.json({ data: lottery });
   },
 
   async getJoinedLotteries({ clientId }: { clientId: string }) {
-    const lotteriesParticipantStore = getLotteriesParticipantStore();
+    try {
+      const participant: LotteriesParticipant = await this._getLotteriesParticipant(clientId);
 
-    const participant: LotteriesParticipant = await lotteriesParticipantStore.get(clientId, {
-      type: 'json',
-    });
+      const participantWithLotteriesInfo = await this._participantWithLotteriesInfo(participant);
 
-    if (!participant) {
-      return Response.json({ data: [] });
+      return Response.json({ data: participantWithLotteriesInfo.joinedLotteries });
+    } catch (e) {
+      if (e instanceof AppError && e.code === 404) {
+        return Response.json({ data: [] });
+      }
+      throw e;
     }
-
-    const participantWithLotteriesInfo = await this._participantWithLotteriesInfo(
-      getLotteriesStore(),
-      participant,
-    );
-
-    return Response.json({ data: participantWithLotteriesInfo.joinedLotteries });
   },
 
   async joinLottery({ clientId, lotteryName }: { clientId: string; lotteryName: any }) {
-    const lotteriesParticipantStore = getLotteriesParticipantStore();
-    const lotteriesStore = getLotteriesStore();
-    const lottery: LotteryInfo = await lotteriesStore.get(lotteryName, { type: 'json' });
-    if (!lottery) {
-      return Response.json({ data: `Lottery ${lotteryName} does not exist` }, { status: 404 });
-    }
+    const lottery: LotteryInfo = await this._getLottery(lotteryName);
 
-    let participant: LotteriesParticipant | undefined = await lotteriesParticipantStore.get(
-      clientId,
-      { type: 'json' },
-    );
-    if (!participant) {
-      participant = {
-        participantId: clientId,
-        joinedLotteries: [],
-      };
+    let participant: LotteriesParticipant | undefined;
+    try {
+      participant = await this._getLotteriesParticipant(clientId);
+    } catch (e) {
+      if (e instanceof AppError && e.code === 404) {
+        participant = {
+          participantId: clientId,
+          joinedLotteries: [],
+        };
+      } else {
+        throw e;
+      }
     }
 
     const lotteryForParticipant: LotteryInfoForParticipant = {
@@ -165,35 +153,27 @@ export const LotteriesService = {
     lottery.participants++;
 
     await Promise.all([
-      lotteriesStore.setJSON(lottery.name, lottery),
-      lotteriesParticipantStore.setJSON(clientId, participant),
+      LOTTERIES_STORE.setJSON(lottery.name, lottery),
+      LOTTERIES_PARTICIPANT_STORE.setJSON(clientId, participant),
     ]);
 
-    const participantWithLotteriesInfo = await this._participantWithLotteriesInfo(
-      lotteriesStore,
-      participant,
-    );
+    const participantWithLotteriesInfo = await this._participantWithLotteriesInfo(participant);
 
     return Response.json({ data: participantWithLotteriesInfo });
   },
 
-  async _participantWithLotteriesInfo(lotteriesStore: Store, participant: LotteriesParticipant) {
+  async _participantWithLotteriesInfo(participant: LotteriesParticipant) {
     const lotteriesInfo = await Promise.all(
       participant.joinedLotteries.map(
         async (lotteryForParticipant) =>
-          await this._lotteryWithNextExtractionInfo(lotteriesStore, lotteryForParticipant),
+          await this._lotteryWithNextExtractionInfo(lotteryForParticipant),
       ),
     );
     return { ...participant, joinedLotteries: lotteriesInfo };
   },
 
-  async _lotteryWithNextExtractionInfo(
-    lotteriesStore: Store,
-    lotteryForParticipant: LotteryInfoForParticipant,
-  ) {
-    const lottery: LotteryInfo = await lotteriesStore.get(lotteryForParticipant.name, {
-      type: 'json',
-    });
+  async _lotteryWithNextExtractionInfo(lotteryForParticipant: LotteryInfoForParticipant) {
+    const lottery: LotteryInfo = await this._getLottery(lotteryForParticipant.name);
     return {
       ...lotteryForParticipant,
       nextExtraction: lottery.nextExtraction,
@@ -201,12 +181,8 @@ export const LotteriesService = {
   },
 
   async getJoinedLottery({ lotteryId, clientId }: { lotteryId: string; clientId: string }) {
-    const participant: LotteriesParticipant = await getLotteriesParticipantStore().get(clientId, {
-      type: 'json',
-    });
-    if (!participant) {
-      return Response.json({ data: `Participant not found` }, { status: 404 });
-    }
+    const participant: LotteriesParticipant = await this._getLotteriesParticipant(clientId);
+
     const lotteryForParticipant = participant.joinedLotteries.find(
       (lottery) => lottery.name === lotteryId,
     );
@@ -214,12 +190,10 @@ export const LotteriesService = {
       return Response.json({ data: `You did not joined lottery ${lotteryId}` }, { status: 403 });
     }
 
-    const extendedLotteryInfo = await this._lotteryWithNextExtractionInfo(
-      getLotteriesStore(),
-      lotteryForParticipant,
-    );
+    const extendedLotteryInfo = await this._lotteryWithNextExtractionInfo(lotteryForParticipant);
     return Response.json({ data: extendedLotteryInfo });
   },
+
   async saveChosenNumbers({
     clientId,
     lotteryId,
@@ -229,13 +203,8 @@ export const LotteriesService = {
     lotteryId: string;
     chosenNumbers: any;
   }) {
-    const lotteriesParticipantStore = getLotteriesParticipantStore();
-    const participant: LotteriesParticipant = await lotteriesParticipantStore.get(clientId, {
-      type: 'json',
-    });
-    if (!participant) {
-      return Response.json({ data: `Participant not found` }, { status: 404 });
-    }
+    const participant: LotteriesParticipant = await this._getLotteriesParticipant(clientId);
+
     const lotteryForParticipant = participant.joinedLotteries.find(
       (lottery) => lottery.name === lotteryId,
     );
@@ -244,9 +213,78 @@ export const LotteriesService = {
     }
 
     lotteryForParticipant.chosenNumbers = chosenNumbers;
+    lotteryForParticipant.lastUpdateChosenNumbers = new Date().toISOString();
 
-    await lotteriesParticipantStore.setJSON(clientId, participant);
+    await LOTTERIES_PARTICIPANT_STORE.setJSON(clientId, participant);
 
     return Response.json({ data: participant });
+  },
+
+  async _getLottery(lotteryId: string, clientId?: string) {
+    const lottery: LotteryInfo = await LOTTERIES_STORE.get(lotteryId, { type: 'json' });
+
+    if (!lottery) {
+      throw new AppError(404, `Lottery ${lotteryId} not found`);
+    }
+
+    if (clientId && lottery.owner !== clientId) {
+      throw new AppError(403, `You are not allowed to see ${lotteryId}`);
+    }
+
+    const nextExtraction = lottery.nextExtraction;
+
+    if (
+      nextExtraction &&
+      isBefore(new Date(nextExtraction.extractionTime), addMinutes(new Date(), 15))
+    ) {
+      lottery.previousExtractions.push(nextExtraction);
+
+      lottery.nextExtraction = undefined;
+
+      await LOTTERIES_STORE.setJSON(lotteryId, lottery);
+    }
+
+    return lottery;
+  },
+
+  async _getLotteriesParticipant(clientId: string) {
+    const participant: LotteriesParticipant = await LOTTERIES_PARTICIPANT_STORE.get(clientId, {
+      type: 'json',
+    });
+
+    if (!participant) {
+      throw new AppError(404, `Participant not found`);
+    }
+
+    await Promise.all(
+      participant.joinedLotteries.map(async (lotteryForParticipant) => {
+        const lottery: LotteryInfo = await this._getLottery(lotteryForParticipant.name);
+
+        const lastExtraction = lottery.previousExtractions?.pop()?.extractionTime;
+        const lastUpdateChosenNumbers = lotteryForParticipant.lastUpdateChosenNumbers;
+
+        if (
+          lastExtraction &&
+          lastUpdateChosenNumbers &&
+          isBefore(new Date(lastUpdateChosenNumbers), new Date(lastExtraction))
+        ) {
+          let previousExtractions = lotteryForParticipant.previousExtractions;
+          if (!previousExtractions) {
+            previousExtractions = [];
+            lotteryForParticipant.previousExtractions = previousExtractions;
+          }
+          previousExtractions.push({
+            chosenNumbers: lotteryForParticipant.chosenNumbers,
+            extractionId: lastExtraction,
+          });
+
+          lotteryForParticipant.chosenNumbers = [];
+          lotteryForParticipant.lastUpdateChosenNumbers = undefined;
+        }
+      }),
+    );
+    await LOTTERIES_PARTICIPANT_STORE.setJSON(clientId, participant);
+
+    return participant;
   },
 };

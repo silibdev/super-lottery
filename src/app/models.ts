@@ -20,8 +20,14 @@ export interface LotteriesParticipant {
 export interface LotteryInfoForParticipant {
   name: string;
   chosenNumbers: number[];
+  lastUpdateChosenNumbers?: string;
   nextExtraction?: ExtractionInfoForParticipant;
-  previousExtractions?: { extractionId: string; chosenNumbers: number[] }[];
+  previousExtractions?: NumbersForExtraction[];
+}
+
+export interface NumbersForExtraction {
+  extractionId: string;
+  chosenNumbers: number[];
 }
 
 export type ExtractionInfoForParticipant = Pick<ExtractionInfo, 'extractionTime' | 'lotteryId'>;
