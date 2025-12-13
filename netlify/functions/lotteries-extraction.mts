@@ -1,5 +1,5 @@
 import type { Config, Context } from '@netlify/functions';
-import { LotteriesService } from '../services/lotteries.service';
+import { ParticipantService } from '../services/participant.service';
 import { getClientId, getExtractionIdFromUrl, getLotteryIdFromUrl, handleRequest } from '../utils';
 
 export const config: Config = { path: ['/api/lotteries/:lotteryId/extractions/:extractionId'] };
@@ -13,7 +13,7 @@ const handler = async (req: Request, context: Context) => {
       const lotteryId = getLotteryIdFromUrl(req.url, context);
       const extractionId = getExtractionIdFromUrl(req.url, context);
       if (lotteryId && extractionId) {
-        return await LotteriesService.getExtraction({
+        return await ParticipantService.getExtraction({
           lotteryId,
           clientId,
           extractionId,

@@ -1,6 +1,6 @@
 import type { Config, Context } from '@netlify/functions';
 import { getClientId, getJoinedLotteryIdFromUrl, handleRequest } from '../utils';
-import { LotteriesService } from '../services/lotteries.service';
+import { ParticipantService } from '../services/participant.service';
 
 export const config: Config = {
   path: ['/api/joined-lotteries', '/api/joined-lotteries/:lotteryId'],
@@ -15,19 +15,19 @@ const handler = async (req: Request, context: Context) => {
   switch (req.method) {
     case 'GET':
       if (lotteryId) {
-        return await LotteriesService.getJoinedLottery({ lotteryId, clientId });
+        return await ParticipantService.getJoinedLottery({ lotteryId, clientId });
       } else {
-        return await LotteriesService.getJoinedLotteries({ clientId });
+        return await ParticipantService.getJoinedLotteries({ clientId });
       }
     case 'POST':
       const { name: lotteryName } = await req.json();
-      return await LotteriesService.joinLottery({ clientId, lotteryName });
+      return await ParticipantService.joinLottery({ clientId, lotteryName });
     case 'PUT':
       if (!lotteryId) {
         return new Response(null, { status: 400 });
       }
       const { chosenNumbers } = await req.json();
-      return await LotteriesService.saveChosenNumbers({ clientId, lotteryId, chosenNumbers });
+      return await ParticipantService.saveChosenNumbers({ clientId, lotteryId, chosenNumbers });
   }
   return new Response(null, { status: 405 });
 };

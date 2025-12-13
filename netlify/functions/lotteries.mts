@@ -1,5 +1,5 @@
 import type { Config, Context } from '@netlify/functions';
-import { LotteriesService } from '../services/lotteries.service';
+import { LotteryDomainService } from '../services/lottery-domain.service';
 import { getClientId, getLotteryIdFromUrl, handleRequest } from '../utils';
 
 export const config: Config = { path: ['/api/lotteries/:lotteryId', '/api/lotteries'] };
@@ -12,13 +12,13 @@ const handler = async (req: Request, context: Context) => {
     case 'GET':
       const lotteryId = getLotteryIdFromUrl(req.url, context);
       if (lotteryId) {
-        return await LotteriesService.getLottery({ lotteryId, clientId });
+        return await LotteryDomainService.getLottery({ lotteryId, clientId });
       } else {
-        return await LotteriesService.loadLotteries({ clientId });
+        return await LotteryDomainService.loadLotteries({ clientId });
       }
     case 'POST':
       const { name: lotteryName } = await req.json();
-      return await LotteriesService.createLottery({ clientId, lotteryName });
+      return await LotteryDomainService.createLottery({ clientId, lotteryName });
   }
   return new Response(null, { status: 405 });
 };
