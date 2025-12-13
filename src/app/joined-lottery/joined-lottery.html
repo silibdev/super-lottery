@@ -1,0 +1,40 @@
+@switch (lottery.status()) {
+  @case ('loading') {
+    <div class="loader-container">
+      <p-progress-spinner ariaLabel="loading"/>
+    </div>
+  }
+  @case ('error') {
+    <app-go-home-button/>
+  }
+  @case ('resolved') {
+    <h1>Lottery: {{ lottery.value()!.name }}</h1>
+    <p-fieldset legend="Chosen numbers">
+      <div>Next extraction: {{ nextExtractionTime() }}</div>
+      <div>{{ lottery.value()!.chosenNumbers.join(', ') }}</div>
+    </p-fieldset>
+
+    @switch (previousExtractions.status()) {
+      @case ('loading') {
+        <div class="loader-container">
+          <p-progress-spinner ariaLabel="loading"/>
+        </div>
+      }
+      @case ('resolved') {
+        @let prevExtr = previousExtractions.value();
+        @if (prevExtr?.length) {
+          <p-fieldset
+            class="p-pt-1"
+            legend="Previous extractions"
+          >
+            @for (extraction of prevExtr; track extraction.extractionTime) {
+              <div>{{ extraction.extractionTime }}</div>
+              <div>{{ extraction.winningNumbers }}</div>
+              <div>{{ extraction.chosenNumbers }}</div>
+            }
+          </p-fieldset>
+        }
+      }
+    }
+  }
+}
