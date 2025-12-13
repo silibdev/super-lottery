@@ -101,7 +101,7 @@ export class JoinedLottery {
           });
           return {
             extractionTime: new Date(extr.extractionId).toLocaleString(),
-            winningNumbers: extraction.data.winningNumbers.join(', '),
+            winningNumbers: extraction.data.winningNumbers?.join(', '),
             chosenNumbers: extr.chosenNumbers.join(', '),
           };
         }),

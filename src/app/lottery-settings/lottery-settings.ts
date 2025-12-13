@@ -55,7 +55,7 @@ export class LotterySettings {
         if (lottery.nextExtraction) {
           this.nextExtractionForm.setValue({
             extractionTime: new Date(lottery.nextExtraction.extractionTime),
-            winningNumbers: lottery.nextExtraction.winningNumbers.join(', '),
+            winningNumbers: lottery.nextExtraction.winningNumbers?.join(', ') || '',
           });
         }
         return lottery;
@@ -69,7 +69,7 @@ export class LotterySettings {
     const previousExtractions = lottery?.previousExtractions || [];
     return previousExtractions.map((e) => ({
       extractionTime: new Date(e.extractionTime).toLocaleString(),
-      winningNumbers: e.winningNumbers.join(', '),
+      winningNumbers: e.winningNumbers?.join(', '),
     }));
   });
 

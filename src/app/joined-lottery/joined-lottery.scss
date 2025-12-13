@@ -15,27 +15,30 @@
 .previous-extractions-container {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 2rem;
 
   .previous-extraction {
     flex: 1 0 100%;
 
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
 
     .time {
       font-weight: bold;
-      padding-right: 1rem;
-      width: 7rem;
     }
 
     .numbers {
       display: flex;
+      flex-direction: column;
       gap: 0.5rem;
 
       div {
+        flex: 1 0 100%;
         display: flex;
         align-items: center;
+        gap: 0.5rem;
       }
     }
   }

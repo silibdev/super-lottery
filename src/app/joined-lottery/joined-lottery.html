@@ -54,6 +54,8 @@
         @if (prevExtr?.length) {
           <p-fieldset
             legend="Previous extractions"
+            [toggleable]="true"
+            [collapsed]="true"
           >
             <div class="previous-extractions-container">
               @for (extraction of prevExtr; track extraction.extractionTime) {

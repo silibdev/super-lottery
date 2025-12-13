@@ -16,10 +16,10 @@ export class JoinedLotteryService {
     lotteryId,
     extractionId,
   }: {
-    lotteryId: any;
-    extractionId: any;
+    lotteryId: string;
+    extractionId: string;
   }): Promise<AppResponse<ExtractionInfo>> {
-    const res = await fetch('api/lotteries/' + lotteryId + '/extractions/' + extractionId);
+    const res = await fetch('api/lotteries/' + lotteryId + '/extractions/' + btoa(extractionId));
     manageHttpResponse(res);
     return await res.json();
   }
