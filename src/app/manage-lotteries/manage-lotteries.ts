@@ -9,6 +9,7 @@ import { FloatLabel } from 'primeng/floatlabel';
 import { InputText } from 'primeng/inputtext';
 import { AppMessagesService } from '../app-messages/app-messages.service';
 import { Message } from 'primeng/message';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-manage-lotteries',
@@ -21,6 +22,7 @@ import { Message } from 'primeng/message';
     ReactiveFormsModule,
     InputText,
     Message,
+    RouterLink,
   ],
   templateUrl: './manage-lotteries.html',
   styleUrl: './manage-lotteries.scss',

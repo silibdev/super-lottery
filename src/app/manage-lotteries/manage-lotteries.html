@@ -38,7 +38,7 @@
         <div><span class="pi pi-arrow-left"></span> {{ lottery.nextExtraction || '' }}</div>
         <ng-template #footer>
           <span class="users"><span class="pi pi-users"></span> {{ lottery.participants }}</span>
-          <p-button icon="pi pi-cog" [size]="'small'"/>
+          <p-button icon="pi pi-cog" [size]="'small'" routerLink="/lotteries/manage/{{ lottery.name }}"/>
         </ng-template>
       </p-card>
     }

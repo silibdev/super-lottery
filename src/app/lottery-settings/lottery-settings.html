@@ -1,0 +1,18 @@
+@switch (lottery.status()) {
+  @case ('loading') {
+    <div class="loader-container">
+      <p-progress-spinner ariaLabel="loading"/>
+    </div>
+  }
+  @case ('error') {
+    <p-button
+      label="You're drunk, go home!"
+      icon="pi pi-sparkles"
+      severity="warn"
+      routerLink="/home"
+    />
+  }
+  @case ('resolved') {
+    <h1>{{ lottery.value()!.name }}</h1>
+  }
+}
