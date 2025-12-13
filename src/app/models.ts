@@ -1,5 +1,6 @@
 export interface LotteryInfo {
   name: string;
+  owner: string;
   participants: number;
   extractions: number;
   lastExtraction?: string;
@@ -14,4 +15,8 @@ export interface LotteryOwner {
 export interface AppMessage {
   type: 'success' | 'info' | 'warn' | 'error' | 'secondary' | 'contrast';
   description: string;
+}
+
+export interface AppResponse<D> {
+  data: D;
 }
