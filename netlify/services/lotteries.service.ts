@@ -1,36 +1,31 @@
-import {
-  AppError,
-  getLotteriesOwnersStore,
-  getLotteriesParticipantStore,
-  getLotteriesStore,
-} from '../utils';
+import { AppError, getLotteriesOwnersStore, getLotteriesParticipantStore, getLotteriesStore } from '../utils';
 import {
   ExtractionInfo,
   LotteriesParticipant,
   LotteryInfo,
   LotteryInfoForParticipant,
-  LotteryOwner,
+  LotteryOwner
 } from '../../src/app/models';
 import { addMinutes, isAfter, isBefore } from 'date-fns';
 
-const LOTTERIES_STORE = getLotteriesStore();
-const LOTTERIES_PARTICIPANT_STORE = getLotteriesParticipantStore();
-const LOTTERIES_OWNERS_STORE = getLotteriesOwnersStore();
+export class LotteriesService {
+  private static readonly LOTTERIES_STORE = getLotteriesStore();
+  private static readonly LOTTERIES_PARTICIPANT_STORE = getLotteriesParticipantStore();
+  private static readonly LOTTERIES_OWNERS_STORE = getLotteriesOwnersStore();
 
-export const LotteriesService = {
-  async loadLotteries({ clientId }: { clientId: string }) {
-    const owner: LotteryOwner = await LOTTERIES_OWNERS_STORE.get(clientId, { type: 'json' });
+  static async loadLotteries({ clientId }: { clientId: string }) {
+    const owner: LotteryOwner = await this.LOTTERIES_OWNERS_STORE.get(clientId, { type: 'json' });
     if (!owner) {
       return Response.json({ data: [] });
     }
 
     const lotteries = await Promise.all(
-      owner.lotteries.map((lotteryId) => this._getLottery(lotteryId)),
+      owner.lotteries.map((lotteryId) => this.internalGetLottery(lotteryId)),
     );
     return Response.json({ data: lotteries });
-  },
+  }
 
-  async createLottery({ lotteryName, clientId }: { clientId: string; lotteryName: string }) {
+  static async createLottery({ lotteryName, clientId }: { clientId: string; lotteryName: string }) {
     if (!lotteryName) {
       return Response.json({ data: 'Missing name' }, { status: 400 });
     }
@@ -39,7 +34,7 @@ export const LotteriesService = {
     }
 
     try {
-      const foundLottery = await this._getLottery(lotteryName);
+      const foundLottery = await this.internalGetLottery(lotteryName);
       if (foundLottery) {
         return Response.json({ data: `Lottery ${lotteryName} already exists` }, { status: 400 });
       }
@@ -51,7 +46,7 @@ export const LotteriesService = {
       }
     }
 
-    let owner: LotteryOwner = await LOTTERIES_OWNERS_STORE.get(clientId, { type: 'json' });
+    let owner: LotteryOwner = await this.LOTTERIES_OWNERS_STORE.get(clientId, { type: 'json' });
     if (!owner) {
       owner = { id: clientId, lotteries: [] };
     }
@@ -66,20 +61,20 @@ export const LotteriesService = {
     };
 
     await Promise.all([
-      LOTTERIES_OWNERS_STORE.setJSON(clientId, owner),
-      LOTTERIES_STORE.setJSON(lotteryName, lottery),
+      this.LOTTERIES_OWNERS_STORE.setJSON(clientId, owner),
+      this.LOTTERIES_STORE.setJSON(lotteryName, lottery),
     ]);
 
     return Response.json({ data: 'ok' });
-  },
+  }
 
-  async getLottery({ lotteryId, clientId }: { lotteryId: string; clientId: string }) {
-    const lottery: LotteryInfo = await this._getLottery(lotteryId, clientId);
+  static async getLottery({ lotteryId, clientId }: { lotteryId: string; clientId: string }) {
+    const lottery: LotteryInfo = await this.internalGetLottery(lotteryId, clientId);
 
     return Response.json({ data: lottery });
-  },
+  }
 
-  async createNextExtraction({
+  static async createNextExtraction({
     extractionInfo,
     clientId,
     lotteryId,
@@ -88,7 +83,7 @@ export const LotteriesService = {
     clientId: string;
     lotteryId: string;
   }) {
-    const lottery: LotteryInfo = await this._getLottery(lotteryId, clientId);
+    const lottery: LotteryInfo = await this.internalGetLottery(lotteryId, clientId);
 
     lottery.owner = clientId;
 
@@ -100,18 +95,18 @@ export const LotteriesService = {
       );
     }
 
-    extractionInfo.winningNumbers = this._validateNumbers(extractionInfo.winningNumbers!);
+    extractionInfo.winningNumbers = this.validateNumbers(extractionInfo.winningNumbers!);
     lottery.nextExtraction = extractionInfo;
 
-    await LOTTERIES_STORE.setJSON(lotteryId, lottery);
+    await this.LOTTERIES_STORE.setJSON(lotteryId, lottery);
     return Response.json({ data: lottery });
-  },
+  }
 
-  async getJoinedLotteries({ clientId }: { clientId: string }) {
+  static async getJoinedLotteries({ clientId }: { clientId: string }) {
     try {
-      const participant: LotteriesParticipant = await this._getLotteriesParticipant(clientId);
+      const participant: LotteriesParticipant = await this.getLotteriesParticipant(clientId);
 
-      const participantWithLotteriesInfo = await this._participantWithLotteriesInfo(participant);
+      const participantWithLotteriesInfo = await this.participantWithLotteriesInfo(participant);
 
       return Response.json({ data: participantWithLotteriesInfo.joinedLotteries });
     } catch (e) {
@@ -120,26 +115,14 @@ export const LotteriesService = {
       }
       throw e;
     }
-  },
+  }
 
-  _validateNumbers(numbers: number[]) {
-    if (numbers!.length !== 10) {
-      throw new AppError(400, `Invalid numbers length ${numbers!.length}. It must be 10.`);
-    }
-
-    if (new Set(numbers).size !== 10) {
-      throw new AppError(400, `Invalid winning numbers. They must be unique.`);
-    }
-
-    return numbers.sort();
-  },
-
-  async joinLottery({ clientId, lotteryName }: { clientId: string; lotteryName: any }) {
-    const lottery: LotteryInfo = await this._getLottery(lotteryName);
+  static async joinLottery({ clientId, lotteryName }: { clientId: string; lotteryName: any }) {
+    const lottery: LotteryInfo = await this.internalGetLottery(lotteryName);
 
     let participant: LotteriesParticipant | undefined;
     try {
-      participant = await this._getLotteriesParticipant(clientId);
+      participant = await this.getLotteriesParticipant(clientId);
     } catch (e) {
       if (e instanceof AppError && e.code === 404) {
         participant = {
@@ -160,27 +143,112 @@ export const LotteriesService = {
     lottery.participants++;
 
     await Promise.all([
-      LOTTERIES_STORE.setJSON(lottery.name, lottery),
-      LOTTERIES_PARTICIPANT_STORE.setJSON(clientId, participant),
+      this.LOTTERIES_STORE.setJSON(lottery.name, lottery),
+      this.LOTTERIES_PARTICIPANT_STORE.setJSON(clientId, participant),
     ]);
 
-    const participantWithLotteriesInfo = await this._participantWithLotteriesInfo(participant);
+    const participantWithLotteriesInfo = await this.participantWithLotteriesInfo(participant);
 
     return Response.json({ data: participantWithLotteriesInfo });
-  },
+  }
 
-  async _participantWithLotteriesInfo(participant: LotteriesParticipant) {
+  static async getJoinedLottery({ lotteryId, clientId }: { lotteryId: string; clientId: string }) {
+    const participant: LotteriesParticipant = await this.getLotteriesParticipant(clientId);
+
+    const lotteryForParticipant = participant.joinedLotteries.find(
+      (lottery) => lottery.name === lotteryId,
+    );
+    if (!lotteryForParticipant) {
+      return Response.json({ data: `You did not joined lottery ${lotteryId}` }, { status: 403 });
+    }
+
+    const extendedLotteryInfo = await this.lotteryWithNextExtractionInfo(lotteryForParticipant);
+    return Response.json({ data: extendedLotteryInfo });
+  }
+
+  static async saveChosenNumbers({
+    clientId,
+    lotteryId,
+    chosenNumbers,
+  }: {
+    clientId: string;
+    lotteryId: string;
+    chosenNumbers: number[];
+  }) {
+    const participant: LotteriesParticipant = await this.getLotteriesParticipant(clientId);
+
+    const lotteryForParticipant = participant.joinedLotteries.find(
+      (lottery) => lottery.name === lotteryId,
+    );
+    if (!lotteryForParticipant) {
+      return Response.json({ data: `You did not joined lottery ${lotteryId}` }, { status: 403 });
+    }
+
+    lotteryForParticipant.chosenNumbers = this.validateNumbers(chosenNumbers);
+    lotteryForParticipant.lastUpdateChosenNumbers = new Date().toISOString();
+
+    await this.LOTTERIES_PARTICIPANT_STORE.setJSON(clientId, participant);
+
+    return Response.json({ data: participant });
+  }
+
+  static async getExtraction({
+    lotteryId,
+    clientId,
+    extractionId,
+  }: {
+    lotteryId: string;
+    clientId: string;
+    extractionId: string;
+  }) {
+    const lottery = await this.internalGetLottery(lotteryId);
+    const decodedExtractionId = atob(extractionId);
+
+    const extraction = lottery.previousExtractions.find(
+      (extraction) => extraction.extractionTime === decodedExtractionId,
+    );
+    if (!extraction) {
+      throw new AppError(404, `Extraction ${extractionId} not found`);
+    }
+
+    if (isAfter(new Date(), new Date(extraction.extractionTime))) {
+      return Response.json({ data: extraction });
+    } else {
+      return Response.json({
+        data: {
+          winningNumbers: extraction.winningNumbers,
+          extractionTime: extraction.extractionTime,
+        },
+      });
+    }
+  }
+
+  private static validateNumbers(numbers: number[]) {
+    if (numbers!.length !== 10) {
+      throw new AppError(400, `Invalid numbers length ${numbers!.length}. It must be 10.`);
+    }
+
+    if (new Set(numbers).size !== 10) {
+      throw new AppError(400, `Invalid winning numbers. They must be unique.`);
+    }
+
+    return numbers.sort();
+  }
+
+  private static async participantWithLotteriesInfo(participant: LotteriesParticipant) {
     const lotteriesInfo = await Promise.all(
       participant.joinedLotteries.map(
         async (lotteryForParticipant) =>
-          await this._lotteryWithNextExtractionInfo(lotteryForParticipant),
+          await this.lotteryWithNextExtractionInfo(lotteryForParticipant),
       ),
     );
     return { ...participant, joinedLotteries: lotteriesInfo };
-  },
+  }
 
-  async _lotteryWithNextExtractionInfo(lotteryForParticipant: LotteryInfoForParticipant) {
-    const lottery: LotteryInfo = await this._getLottery(lotteryForParticipant.name);
+  private static async lotteryWithNextExtractionInfo(
+    lotteryForParticipant: LotteryInfoForParticipant,
+  ) {
+    const lottery: LotteryInfo = await this.internalGetLottery(lotteryForParticipant.name);
     return {
       ...lotteryForParticipant,
       nextExtraction: lottery.nextExtraction,
@@ -198,50 +266,10 @@ export const LotteriesService = {
         }
       }),
     };
-  },
+  }
 
-  async getJoinedLottery({ lotteryId, clientId }: { lotteryId: string; clientId: string }) {
-    const participant: LotteriesParticipant = await this._getLotteriesParticipant(clientId);
-
-    const lotteryForParticipant = participant.joinedLotteries.find(
-      (lottery) => lottery.name === lotteryId,
-    );
-    if (!lotteryForParticipant) {
-      return Response.json({ data: `You did not joined lottery ${lotteryId}` }, { status: 403 });
-    }
-
-    const extendedLotteryInfo = await this._lotteryWithNextExtractionInfo(lotteryForParticipant);
-    return Response.json({ data: extendedLotteryInfo });
-  },
-
-  async saveChosenNumbers({
-    clientId,
-    lotteryId,
-    chosenNumbers,
-  }: {
-    clientId: string;
-    lotteryId: string;
-    chosenNumbers: number[];
-  }) {
-    const participant: LotteriesParticipant = await this._getLotteriesParticipant(clientId);
-
-    const lotteryForParticipant = participant.joinedLotteries.find(
-      (lottery) => lottery.name === lotteryId,
-    );
-    if (!lotteryForParticipant) {
-      return Response.json({ data: `You did not joined lottery ${lotteryId}` }, { status: 403 });
-    }
-
-    lotteryForParticipant.chosenNumbers = this._validateNumbers(chosenNumbers);
-    lotteryForParticipant.lastUpdateChosenNumbers = new Date().toISOString();
-
-    await LOTTERIES_PARTICIPANT_STORE.setJSON(clientId, participant);
-
-    return Response.json({ data: participant });
-  },
-
-  async _getLottery(lotteryId: string, clientId?: string) {
-    const lottery: LotteryInfo = await LOTTERIES_STORE.get(lotteryId, { type: 'json' });
+  private static async internalGetLottery(lotteryId: string, clientId?: string) {
+    const lottery: LotteryInfo = await this.LOTTERIES_STORE.get(lotteryId, { type: 'json' });
 
     if (!lottery) {
       throw new AppError(404, `Lottery ${lotteryId} not found`);
@@ -261,14 +289,14 @@ export const LotteriesService = {
 
       lottery.nextExtraction = undefined;
 
-      await LOTTERIES_STORE.setJSON(lotteryId, lottery);
+      await this.LOTTERIES_STORE.setJSON(lotteryId, lottery);
     }
 
     return lottery;
-  },
+  }
 
-  async _getLotteriesParticipant(clientId: string) {
-    const participant: LotteriesParticipant = await LOTTERIES_PARTICIPANT_STORE.get(clientId, {
+  private static async getLotteriesParticipant(clientId: string) {
+    const participant: LotteriesParticipant = await this.LOTTERIES_PARTICIPANT_STORE.get(clientId, {
       type: 'json',
     });
 
@@ -278,7 +306,7 @@ export const LotteriesService = {
 
     await Promise.all(
       participant.joinedLotteries.map(async (lotteryForParticipant) => {
-        const lottery: LotteryInfo = await this._getLottery(lotteryForParticipant.name);
+        const lottery: LotteryInfo = await this.internalGetLottery(lotteryForParticipant.name);
 
         const lastExtraction = lottery.previousExtractions?.pop()?.extractionTime;
         const lastUpdateChosenNumbers = lotteryForParticipant.lastUpdateChosenNumbers;
@@ -303,38 +331,8 @@ export const LotteriesService = {
         }
       }),
     );
-    await LOTTERIES_PARTICIPANT_STORE.setJSON(clientId, participant);
+    await this.LOTTERIES_PARTICIPANT_STORE.setJSON(clientId, participant);
 
     return participant;
-  },
-  async getExtraction({
-    lotteryId,
-    clientId,
-    extractionId,
-  }: {
-    lotteryId: string;
-    clientId: string;
-    extractionId: string;
-  }) {
-    const lottery = await this._getLottery(lotteryId);
-    const decodedExtractionId = atob(extractionId);
-
-    const extraction = lottery.previousExtractions.find(
-      (extraction) => extraction.extractionTime === decodedExtractionId,
-    );
-    if (!extraction) {
-      throw new AppError(404, `Extraction ${extractionId} not found`);
-    }
-
-    if (isAfter(new Date(), new Date(extraction.extractionTime))) {
-      return Response.json({ data: extraction });
-    } else {
-      return Response.json({
-        data: {
-          winningNumbers: extraction.winningNumbers,
-          extractionTime: extraction.extractionTime,
-        },
-      });
-    }
-  },
-};
+  }
+}
