@@ -1,0 +1,30 @@
+.next-extraction-container {
+  display: flex;
+  flex-flow: wrap;
+  align-items: baseline;
+  gap: 2rem;
+  padding-bottom: 1rem;
+
+  .winning-numbers {
+    flex: 1 0 16rem;
+
+    input {
+      width: 20rem;
+    }
+  }
+}
+
+.previous-extractions-container {
+  display: flex;
+  gap: 1rem;
+
+  .previous-extraction {
+    flex: 1 0 100%;
+
+    time {
+      font-weight: bold;
+      padding-right: 1rem;
+      width: 7rem;
+    }
+  }
+}

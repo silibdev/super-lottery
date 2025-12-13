@@ -1,3 +1,7 @@
+<link
+  rel="stylesheet"
+  href="lottery-settings.scss"
+/>
 @switch (lottery.status()) {
   @case ('loading') {
     <div class="loader-container">
@@ -14,5 +18,62 @@
   }
   @case ('resolved') {
     <h1>{{ lottery.value()!.name }}</h1>
+    <p-fieldset legend="Next extraction">
+      <form
+        class="next-extraction-container"
+        [formGroup]="nextExtractionForm"
+      >
+        <p-float-label>
+          <label>Extraction time</label>
+          <p-date-picker
+            formControlName="extractionTime"
+            [showTime]="true"
+          ></p-date-picker>
+        </p-float-label>
+        <div class="winning-numbers">
+          <p-float-label>
+            <label>Winning numbers</label>
+            <input
+              pInputText
+              formControlName="winningNumbers"
+            />
+          </p-float-label>
+          <p-message
+            severity="secondary"
+            size="small"
+            variant="simple"
+          >0-99, separated by comma
+            @if (currentNumbersInserted$ | async; as cni) {
+              [inserted {{ cni }} number]
+            }
+          </p-message>
+        </div>
+        <p-button
+          type="submit"
+          icon="pi pi-save"
+          label="Save"
+          [loading]="savingNextExtraction()"
+          (onClick)="saveNextExtraction()"
+        />
+      </form>
+    </p-fieldset>
+    @let prevExtr = lottery.value()!.previousExtractions;
+    @if (prevExtr && prevExtr.length) {
+      <p-fieldset
+        class="p-pt-1"
+        legend="Previous extractions"
+        [toggleable]="true"
+      >
+        <div class="previous-extractions-container">
+          @for (extraction of lottery.value()!.previousExtractions;
+            track extraction.extractionTime) {
+            <div class="previous-extraction">
+              <div class="time">{{ extraction.extractionTime }}</div>
+              <div class="winning-numbers">{{ extraction.winningNumbers }}</div>
+            </div>
+          }
+        </div>
+      </p-fieldset>
+    }
   }
 }
