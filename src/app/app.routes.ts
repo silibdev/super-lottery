@@ -14,4 +14,9 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./lottery-settings/lottery-settings').then((m) => m.LotterySettings),
   },
+  {
+    path: 'lotteries/joined',
+    loadComponent: () =>
+      import('./joined-lotteries/joined-lotteries').then((m) => m.JoinedLotteries),
+  },
 ];

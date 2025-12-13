@@ -1,0 +1,48 @@
+<h1>Joined Lotteries</h1>
+<div class="actions-container">
+  <p-button
+    label="Join Lottery"
+    icon="pi pi-search"
+    (click)="openJoinLottery()"
+  ></p-button>
+</div>
+<p-dialog
+  [visible]="joinLotteryDialogVisible()"
+  (visibleChange)="joinLotteryDialogVisible.set($event)"
+  header="Join Lottery"
+  [modal]="true"
+  [dismissableMask]="false"
+  [draggable]="false"
+  [resizable]="false"
+>
+  <div>
+    <p-float-label>
+      <label>Name</label>
+      <input
+        pInputText
+        [formControl]="nameControl"
+      />
+    </p-float-label>
+  </div>
+  <ng-template #footer>
+    <p-button
+      label="Join"
+      [loading]="joinLotteryLoading()"
+      (click)="joinLottery()"
+    />
+  </ng-template>
+</p-dialog>
+
+@if (lotteries.isLoading()) {
+  <div class="loader-container">
+    <p-progress-spinner ariaLabel="loading"/>
+  </div>
+} @else if (lotteries.hasValue()) {
+  <div class="lotteries-container">
+    @for (lottery of lotteries.value(); track lottery.name) {
+      <app-lottery-card [lottery]="lottery">
+      </app-lottery-card>
+    }
+  </div>
+}
+

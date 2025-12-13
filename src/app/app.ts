@@ -14,5 +14,6 @@ import { AppMessages } from './app-messages/app-messages';
 export class App {
   protected readonly menuItems: MegaMenuItem[] = [
     { label: 'Owned Lotteries', routerLink: ['/lotteries/manage'] },
+    { label: 'Joined Lotteries', routerLink: ['/lotteries/joined'] },
   ];
 }
