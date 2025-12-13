@@ -23,4 +23,19 @@ export class JoinedLotteryService {
     manageHttpResponse(res);
     return await res.json();
   }
+
+  async saveChosenNumbers({
+    lotteryId,
+    chosenNumbers,
+  }: {
+    lotteryId: string;
+    chosenNumbers: number[];
+  }) {
+    const res = await fetch('api/joined-lotteries/' + lotteryId, {
+      method: 'PUT',
+      body: JSON.stringify({ chosenNumbers }),
+    });
+    manageHttpResponse(res);
+    return await res.json();
+  }
 }

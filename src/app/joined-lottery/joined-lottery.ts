@@ -1,16 +1,33 @@
-import { Component, computed, inject, resource } from '@angular/core';
+import { Component, computed, inject, resource, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { AppMessagesService } from '../app-messages/app-messages.service';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { JoinedLotteryService } from './joined-lottery.service';
-import { FormBuilder, Validators } from '@angular/forms';
+import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ProgressSpinner } from 'primeng/progressspinner';
 import { GoHomeButton } from '../go-home-button/go-home-button';
 import { Fieldset } from 'primeng/fieldset';
+import { AsyncPipe } from '@angular/common';
+import { FloatLabel } from 'primeng/floatlabel';
+import { InputText } from 'primeng/inputtext';
+import { Message } from 'primeng/message';
+import { Button } from 'primeng/button';
+import { catchError, map, of } from 'rxjs';
 
 @Component({
   selector: 'app-joined-lottery',
-  imports: [ProgressSpinner, GoHomeButton, Fieldset],
+  imports: [
+    ProgressSpinner,
+    GoHomeButton,
+    Fieldset,
+    AsyncPipe,
+    FloatLabel,
+    FormsModule,
+    InputText,
+    Message,
+    ReactiveFormsModule,
+    Button,
+  ],
   templateUrl: './joined-lottery.html',
   styleUrl: './joined-lottery.scss',
 })
@@ -34,13 +51,15 @@ export class JoinedLottery {
         const lottery = resp!.data;
 
         this.nextExtractionForm.setValue({
-          winningNumbers: lottery.chosenNumbers.join(', '),
+          chosenNumbers: lottery.chosenNumbers.join(', '),
         });
         return lottery;
       }
       throw new Error('Lottery ID not provided');
     },
   });
+
+  protected savingChosenNumbers = signal(false);
 
   protected nextExtractionTime = computed(() => {
     const lottery = this.lottery.value();
@@ -55,8 +74,21 @@ export class JoinedLottery {
   });
 
   protected readonly nextExtractionForm = inject(FormBuilder).nonNullable.group({
-    winningNumbers: ['', [Validators.required, Validators.pattern(/^\s*\d?\d\s*(,\s*\d?\d\s*)*$/)]],
+    chosenNumbers: ['', [Validators.required, Validators.pattern(/^\s*\d?\d\s*(,\s*\d?\d\s*)*$/)]],
   });
+
+  protected currentNumbersInserted$ = this.nextExtractionForm
+    .get('chosenNumbers')!
+    .valueChanges.pipe(
+      map(
+        (numbers) =>
+          numbers
+            .split(',')
+            .filter((n) => n.trim() !== '')
+            .map((n) => parseInt(n.trim(), 10)).length,
+      ),
+      catchError((err) => of(null)),
+    );
 
   protected readonly previousExtractions = resource({
     params: () => this.lottery.value(),
@@ -77,4 +109,20 @@ export class JoinedLottery {
       return lotteriesInfo;
     },
   });
+
+  protected async saveChosenNumbers() {
+    const extraction = this.nextExtractionForm.value;
+    const chosenNumbers = extraction.chosenNumbers!.split(',').map((n) => parseInt(n.trim(), 10));
+    const lotteryId = this.lotteryId()!;
+
+    this.savingChosenNumbers.set(true);
+    await this.joinedLotteryService
+      .saveChosenNumbers({
+        lotteryId,
+        chosenNumbers,
+      })
+      .then(this.appMessagesService.showHttpResponse())
+      .catch(this.appMessagesService.showHttpError({ dontThrow: true }));
+    this.savingChosenNumbers.set(false);
+  }
 }

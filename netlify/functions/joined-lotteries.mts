@@ -8,9 +8,10 @@ export const config: Config = {
 
 export default async (req: Request, context: Context) => {
   const clientId = getClientId(context);
+  const lotteryId = getJoinedLotteryIdFromUrl(req.url, context);
+
   switch (req.method) {
     case 'GET':
-      const lotteryId = getJoinedLotteryIdFromUrl(req.url, context);
       if (lotteryId) {
         return await LotteriesService.getJoinedLottery({ lotteryId, clientId });
       } else {
@@ -19,6 +20,12 @@ export default async (req: Request, context: Context) => {
     case 'POST':
       const { name: lotteryName } = await req.json();
       return await LotteriesService.joinLottery({ clientId, lotteryName });
+    case 'PUT':
+      if (!lotteryId) {
+        return new Response(null, { status: 400 });
+      }
+      const { chosenNumbers } = await req.json();
+      return await LotteriesService.saveChosenNumbers({ clientId, lotteryId, chosenNumbers });
   }
   return new Response(null, { status: 405 });
 };

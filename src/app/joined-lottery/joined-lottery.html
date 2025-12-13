@@ -9,9 +9,38 @@
   }
   @case ('resolved') {
     <h1>Lottery: {{ lottery.value()!.name }}</h1>
-    <p-fieldset legend="Chosen numbers">
-      <div>Next extraction: {{ nextExtractionTime() }}</div>
-      <div>{{ lottery.value()!.chosenNumbers.join(', ') }}</div>
+    <p-fieldset
+      legend="Chosen numbers"
+      [formGroup]="nextExtractionForm"
+    >
+      <div class="chosen-numbers-container">
+        <div>Next extraction: {{ nextExtractionTime() }}</div>
+        <div class="chosen-numbers">
+          <p-float-label>
+            <label>Winning numbers</label>
+            <input
+              pInputText
+              formControlName="chosenNumbers"
+            />
+          </p-float-label>
+          <p-message
+            severity="secondary"
+            size="small"
+            variant="simple"
+          >0-99, separated by comma
+            @if (currentNumbersInserted$ | async; as cni) {
+              [inserted {{ cni }} number]
+            }
+          </p-message>
+        </div>
+        <p-button
+          type="submit"
+          icon="pi pi-save"
+          label="Save"
+          [loading]="savingChosenNumbers()"
+          (onClick)="saveChosenNumbers()"
+        />
+      </div>
     </p-fieldset>
 
     @switch (previousExtractions.status()) {
@@ -27,11 +56,17 @@
             class="p-pt-1"
             legend="Previous extractions"
           >
-            @for (extraction of prevExtr; track extraction.extractionTime) {
-              <div>{{ extraction.extractionTime }}</div>
-              <div>{{ extraction.winningNumbers }}</div>
-              <div>{{ extraction.chosenNumbers }}</div>
-            }
+            <div class="previous-extractions-container">
+              @for (extraction of prevExtr; track extraction.extractionTime) {
+                <div class="previous-extraction">
+                  <div class="time">{{ extraction.extractionTime }}</div>
+                  <div class="numbers">
+                    <div><span class="pi pi-trophy"></span> {{ extraction.winningNumbers }}</div>
+                    <div><span class="pi pi-heart"></span> {{ extraction.chosenNumbers }}</div>
+                  </div>
+                </div>
+              }
+            </div>
           </p-fieldset>
         }
       }

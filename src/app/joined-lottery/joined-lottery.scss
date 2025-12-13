@@ -1,0 +1,41 @@
+.chosen-numbers-container {
+  display: flex;
+  width: 100%;
+  flex-flow: wrap;
+  align-items: baseline;
+  gap: 2rem;
+
+  .chosen-numbers {
+    input {
+      width: 20rem;
+    }
+  }
+}
+
+.previous-extractions-container {
+  display: flex;
+  gap: 1rem;
+
+  .previous-extraction {
+    flex: 1 0 100%;
+
+    display: flex;
+    align-items: center;
+
+    .time {
+      font-weight: bold;
+      padding-right: 1rem;
+      width: 7rem;
+    }
+
+    .numbers {
+      display: flex;
+      gap: 0.5rem;
+
+      div {
+        display: flex;
+        align-items: center;
+      }
+    }
+  }
+}

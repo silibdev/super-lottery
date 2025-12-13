@@ -179,9 +179,10 @@ export const LotteriesService = {
 
   async _participantWithLotteriesInfo(lotteriesStore: Store, participant: LotteriesParticipant) {
     const lotteriesInfo = await Promise.all(
-      participant.joinedLotteries.map(async (lotteryForParticipant) => {
-        await this._lotteryWithNextExtractionInfo(lotteriesStore, lotteryForParticipant);
-      }),
+      participant.joinedLotteries.map(
+        async (lotteryForParticipant) =>
+          await this._lotteryWithNextExtractionInfo(lotteriesStore, lotteryForParticipant),
+      ),
     );
     return { ...participant, joinedLotteries: lotteriesInfo };
   },
@@ -218,5 +219,34 @@ export const LotteriesService = {
       lotteryForParticipant,
     );
     return Response.json({ data: extendedLotteryInfo });
+  },
+  async saveChosenNumbers({
+    clientId,
+    lotteryId,
+    chosenNumbers,
+  }: {
+    clientId: string;
+    lotteryId: string;
+    chosenNumbers: any;
+  }) {
+    const lotteriesParticipantStore = getLotteriesParticipantStore();
+    const participant: LotteriesParticipant = await lotteriesParticipantStore.get(clientId, {
+      type: 'json',
+    });
+    if (!participant) {
+      return Response.json({ data: `Participant not found` }, { status: 404 });
+    }
+    const lotteryForParticipant = participant.joinedLotteries.find(
+      (lottery) => lottery.name === lotteryId,
+    );
+    if (!lotteryForParticipant) {
+      return Response.json({ data: `You did not joined lottery ${lotteryId}` }, { status: 403 });
+    }
+
+    lotteryForParticipant.chosenNumbers = chosenNumbers;
+
+    await lotteriesParticipantStore.setJSON(clientId, participant);
+
+    return Response.json({ data: participant });
   },
 };
