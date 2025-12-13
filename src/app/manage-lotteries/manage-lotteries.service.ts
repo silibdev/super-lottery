@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
 import { manageHttpResponse } from '../utils';
+import { AppResponse, LotteryInfo } from '../models';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ManageLotteriesService {
-  async loadLotteries() {
+  async loadLotteries(): Promise<AppResponse<LotteryInfo[]>> {
     const res = await fetch('api/lotteries');
     manageHttpResponse(res);
     return await res.json();

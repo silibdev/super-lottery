@@ -42,7 +42,7 @@ export class ManageLotteries {
       const resp = await this.manageLotteriesService
         .loadLotteries()
         .catch(this.appMessagesService.showHttpError());
-      return resp.data;
+      return resp!.data;
     },
   });
 

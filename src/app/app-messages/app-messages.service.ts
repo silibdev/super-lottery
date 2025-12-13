@@ -22,7 +22,7 @@ export class AppMessagesService {
   }
 
   showHttpError(options?: { dontThrow?: boolean }) {
-    return async (error: any) => {
+    return async (error: unknown) => {
       if (error instanceof Response) {
         const body = await error.json();
         this.showMessage({ type: 'error', description: body.data || 'No description provided' });
