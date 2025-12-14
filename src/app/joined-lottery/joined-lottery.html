@@ -9,23 +9,9 @@
   }
   @case ('resolved') {
     <h1>Lottery: {{ lottery.value()!.name }}</h1>
-    @if (lastExtractionForUI()) {
+    @if (lastExtractionForUI(); as lastExt) {
       <p-fieldset legend="Current Extraction">
-        <div class="previous-extractions-container">
-          <div class="previous-extraction">
-            <div class="label-with-icon emp">
-              <span class="pi pi-clock"></span>{{ lastExtractionForUI()?.extractionTime }}
-            </div>
-            <div class="numbers">
-              <div class="label-with-icon">
-                <span class="pi pi-trophy"></span> {{ lastExtractionForUI()?.winningNumbers }}
-              </div>
-              <div class="label-with-icon">
-                <span class="pi pi-heart"></span> {{ lastExtractionForUI()?.chosenNumbers }}
-              </div>
-            </div>
-          </div>
-        </div>
+        <app-current-extraction [currentExtraction]="lastExt"/>
       </p-fieldset>
     } @else {
       <p-progress-spinner ariaLabel="loading"/>

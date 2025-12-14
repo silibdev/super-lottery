@@ -1,0 +1,14 @@
+<div>{{ currentExtraction().extractionTime | toLocalDate }}</div>
+@if (countDown()) {
+  <div>-{{ countDown() }}</div>
+}
+<div>
+  @for (number of currentExtraction().winningNumbers; track $index) {
+    <span>{{ number }}</span>
+  }
+</div>
+<div>
+  @for (number of currentExtraction().chosenNumbers; track $index) {
+    <span>{{ number }}</span>
+  }
+</div>

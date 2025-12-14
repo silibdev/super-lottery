@@ -14,6 +14,7 @@ import { Message } from 'primeng/message';
 import { Button } from 'primeng/button';
 import { catchError, map, of } from 'rxjs';
 import { ExtractionInfo } from '../models';
+import { CurrentExtraction } from './current-extraction/current-extraction';
 
 @Component({
   selector: 'app-joined-lottery',
@@ -28,6 +29,7 @@ import { ExtractionInfo } from '../models';
     Message,
     ReactiveFormsModule,
     Button,
+    CurrentExtraction,
   ],
   templateUrl: './joined-lottery.html',
   styleUrl: './joined-lottery.scss',
@@ -101,22 +103,23 @@ export class JoinedLottery {
             extractionId: extr.extractionId,
           });
           return {
-            extractionTime: new Date(extr.extractionId).toLocaleString(),
-            winningNumbers: extraction.data.winningNumbers?.join(', '),
-            chosenNumbers: extr.chosenNumbers.join(', '),
-          } as ExtractionInfo & { chosenNumbers: string };
+            ...extraction.data,
+            chosenNumbers: extr.chosenNumbers,
+          } as ExtractionInfo;
         }),
       );
       const lastExtraction = lotteriesInfo.pop();
       this.lastExtraction.set(lastExtraction);
-      return lotteriesInfo;
+      return lotteriesInfo.map((li) => ({
+        extractionTime: new Date(li.extractionTime).toLocaleString(),
+        winningNumbers: li.winningNumbers?.join(', '),
+        chosenNumbers: li.chosenNumbers?.join(', '),
+      }));
     },
   });
 
-  protected lastExtraction = signal<(ExtractionInfo & { chosenNumbers: string }) | undefined>(
-    undefined,
-  );
-  protected lastExtractionForUI = computed(() => {
+  protected lastExtraction = signal<ExtractionInfo | undefined>(undefined);
+  protected lastExtractionForUI = computed<ExtractionInfo | undefined>(() => {
     const lastExtraction = this.lastExtraction();
     if (!lastExtraction) {
       return undefined;

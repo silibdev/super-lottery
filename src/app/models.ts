@@ -10,6 +10,7 @@ export interface ExtractionInfo {
   lotteryId?: string;
   extractionTime: string;
   winningNumbers?: number[];
+  chosenNumbers?: number[];
 }
 
 export interface LotteriesParticipant {
