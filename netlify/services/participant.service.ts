@@ -1,19 +1,14 @@
 import { AppError } from '../utils';
-import { addMinutes, isAfter, isBefore } from 'date-fns';
-import {
-  ExtractionInfo,
-  LotteriesParticipant,
-  LotteryInfo,
-  LotteryInfoForParticipant,
-} from '../../src/app/models';
+import { isAfter, isBefore } from 'date-fns';
+import { ExtractionInfoForParticipant, LotteriesParticipant, LotteryInfoForParticipant } from '../../src/app/models';
 import { LotteryRepository } from './repositories/lottery.repository';
 import { NumbersValidator } from './numbers.validator';
-import { finalizeDueNextExtraction } from './lottery-domain.service';
+import { LotteryDomainService } from './lottery-domain.service';
 
 export class ParticipantService {
   static async getJoinedLotteries({ clientId }: { clientId: string }) {
     try {
-      const participant = await this.getParticipantWithSync(clientId);
+      const participant = await this.getParticipantUpdatingLastExtraction(clientId);
       const participantWithLotteriesInfo = await this.participantWithLotteriesInfo(participant);
       return Response.json({ data: participantWithLotteriesInfo.joinedLotteries });
     } catch (e) {
@@ -25,7 +20,7 @@ export class ParticipantService {
   }
 
   static async joinLottery({ clientId, lotteryName }: { clientId: string; lotteryName: any }) {
-    const lottery = await this.getLotteryWithRolloverOrThrow(lotteryName);
+    const lottery = await LotteryDomainService.getLotteryEntityWithRollover(lotteryName);
 
     let participant = await LotteryRepository.getParticipant(clientId);
     if (!participant) {
@@ -51,14 +46,8 @@ export class ParticipantService {
     return Response.json({ data: participantWithLotteriesInfo });
   }
 
-  static async getJoinedLottery({
-    lotteryId,
-    clientId,
-  }: {
-    lotteryId: string;
-    clientId: string;
-  }) {
-    const participant = await this.getParticipantWithSync(clientId);
+  static async getJoinedLottery({ lotteryId, clientId }: { lotteryId: string; clientId: string }) {
+    const participant = await this.getParticipantUpdatingLastExtraction(clientId);
     const lotteryForParticipant = participant.joinedLotteries.find((l) => l.name === lotteryId);
     if (!lotteryForParticipant) {
       return Response.json({ data: `You did not joined lottery ${lotteryId}` }, { status: 403 });
@@ -76,7 +65,7 @@ export class ParticipantService {
     lotteryId: string;
     chosenNumbers: number[];
   }) {
-    const participant = await this.getParticipantWithSync(clientId);
+    const participant = await this.getParticipantUpdatingLastExtraction(clientId);
     const lotteryForParticipant = participant.joinedLotteries.find((l) => l.name === lotteryId);
     if (!lotteryForParticipant) {
       return Response.json({ data: `You did not joined lottery ${lotteryId}` }, { status: 403 });
@@ -96,7 +85,7 @@ export class ParticipantService {
     clientId: string;
     extractionId: string;
   }) {
-    const lottery = await this.getLotteryWithRolloverOrThrow(lotteryId);
+    const lottery = await LotteryDomainService.getLotteryEntityWithRollover(lotteryId);
     const decodedExtractionId = atob(extractionId);
     const extraction = lottery.previousExtractions.find(
       (ex) => ex.extractionTime === decodedExtractionId,
@@ -129,10 +118,16 @@ export class ParticipantService {
   private static async lotteryWithNextExtractionInfo(
     lotteryForParticipant: LotteryInfoForParticipant,
   ) {
-    const lottery = await this.getLotteryWithRolloverOrThrow(lotteryForParticipant.name);
+    const lottery = await LotteryDomainService.getLotteryEntityWithRollover(
+      lotteryForParticipant.name,
+    );
+    const nextExtraction: ExtractionInfoForParticipant | undefined = lottery.nextExtraction && {
+      lotteryId: lottery.nextExtraction.lotteryId,
+      extractionTime: lottery.nextExtraction.extractionTime,
+    };
     return {
       ...lotteryForParticipant,
-      nextExtraction: lottery.nextExtraction,
+      nextExtraction,
       previousExtractions: lottery.previousExtractions.map((extraction) => {
         const participantExtraction = lotteryForParticipant.previousExtractions?.find(
           (pe) => pe.extractionId === extraction.extractionTime,
@@ -149,15 +144,18 @@ export class ParticipantService {
     } as LotteryInfoForParticipant;
   }
 
-  private static async getParticipantWithSync(clientId: string) {
-    const participant = await LotteryRepository.getParticipant(clientId);
+  private static async getParticipantUpdatingLastExtraction(clientId: string) {
+    const participant: LotteriesParticipant | undefined =
+      await LotteryRepository.getParticipant(clientId);
     if (!participant) {
       throw new AppError(404, `Participant not found`);
     }
 
     await Promise.all(
       participant.joinedLotteries.map(async (lotteryForParticipant) => {
-        const lottery = await this.getLotteryWithRolloverOrThrow(lotteryForParticipant.name);
+        const lottery = await LotteryDomainService.getLotteryEntityWithRollover(
+          lotteryForParticipant.name,
+        );
         const lastExtraction = lottery.previousExtractions?.pop()?.extractionTime;
         const lastUpdateChosenNumbers = lotteryForParticipant.lastUpdateChosenNumbers;
         if (
@@ -181,17 +179,5 @@ export class ParticipantService {
     );
     await LotteryRepository.saveParticipant(clientId, participant);
     return participant;
-  }
-
-  private static async getLotteryWithRolloverOrThrow(lotteryId: string): Promise<LotteryInfo> {
-    const lottery = await LotteryRepository.getLottery(lotteryId);
-    if (!lottery) {
-      throw new AppError(404, `Lottery ${lotteryId} not found`);
-    }
-    const updated = await finalizeDueNextExtraction(lottery);
-    if (updated) {
-      await LotteryRepository.saveLottery(lotteryId, lottery);
-    }
-    return lottery;
   }
 }

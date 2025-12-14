@@ -1,5 +1,9 @@
-import { getLotteriesOwnersStore, getLotteriesParticipantStore, getLotteriesStore } from '../../utils';
-import { LotteriesParticipant, LotteryInfo, LotteryOwner } from '../../src/app/models';
+import {
+  getLotteriesOwnersStore,
+  getLotteriesParticipantStore,
+  getLotteriesStore,
+} from '../../utils';
+import { LotteriesParticipant, LotteryInfo, LotteryOwner } from '../../../src/app/models';
 
 export class LotteryRepository {
   private static readonly LOTTERIES_STORE = getLotteriesStore();

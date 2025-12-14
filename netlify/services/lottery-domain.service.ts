@@ -1,5 +1,5 @@
 import { AppError } from '../utils';
-import { addMinutes, isAfter, isBefore } from 'date-fns';
+import { addMinutes, isBefore } from 'date-fns';
 import { ExtractionInfo, LotteryInfo, LotteryOwner } from '../../src/app/models';
 import { LotteryRepository } from './repositories/lottery.repository';
 import { NumbersValidator } from './numbers.validator';
@@ -7,7 +7,7 @@ import { NumbersValidator } from './numbers.validator';
 export class LotteryDomainService {
   // Owner-facing: load all lotteries for an owner
   static async loadLotteries({ clientId }: { clientId: string }) {
-    const owner = (await LotteryRepository.getOwner(clientId)) as LotteryOwner | undefined;
+    const owner = await LotteryRepository.getOwner(clientId);
     if (!owner) {
       return Response.json({ data: [] });
     }
@@ -23,13 +23,7 @@ export class LotteryDomainService {
   }
 
   // Owner-facing: create a new lottery
-  static async createLottery({
-    lotteryName,
-    clientId,
-  }: {
-    clientId: string;
-    lotteryName: string;
-  }) {
+  static async createLottery({ lotteryName, clientId }: { clientId: string; lotteryName: string }) {
     if (!lotteryName) {
       return Response.json({ data: 'Missing name' }, { status: 400 });
     }
@@ -102,36 +96,36 @@ export class LotteryDomainService {
     return Response.json({ data: lottery });
   }
 
-  // Helpers
-  static assertOwner(lottery: LotteryInfo, clientId: string) {
-    if (lottery.owner !== clientId) {
-      throw new AppError(403, `You are not allowed to see ${lottery.name}`);
-    }
-  }
-
   static async getLotteryEntityWithRollover(lotteryId: string): Promise<LotteryInfo> {
     const lottery = await LotteryRepository.getLottery(lotteryId);
     if (!lottery) {
       throw new AppError(404, `Lottery ${lotteryId} not found`);
     }
-    const updated = await finalizeDueNextExtraction(lottery);
+    const updated = await this.finalizeDueNextExtraction(lottery);
     if (updated) {
       await LotteryRepository.saveLottery(lotteryId, lottery);
     }
     return lottery;
   }
-}
 
-// Promote nextExtraction to previous if within the 15-minute window
-export async function finalizeDueNextExtraction(lottery: LotteryInfo): Promise<boolean> {
-  const nextExtraction = lottery.nextExtraction;
-  if (
-    nextExtraction &&
-    isBefore(new Date(nextExtraction.extractionTime), addMinutes(new Date(), 15))
-  ) {
-    lottery.previousExtractions.push(nextExtraction);
-    lottery.nextExtraction = undefined;
-    return true;
+  // Helpers
+  private static assertOwner(lottery: LotteryInfo, clientId: string) {
+    if (lottery.owner !== clientId) {
+      throw new AppError(403, `You are not allowed to see ${lottery.name}`);
+    }
   }
-  return false;
+
+  // Promote nextExtraction to previous if within the 15-minute window
+  private static async finalizeDueNextExtraction(lottery: LotteryInfo): Promise<boolean> {
+    const nextExtraction = lottery.nextExtraction;
+    if (
+      nextExtraction &&
+      isBefore(new Date(nextExtraction.extractionTime), addMinutes(new Date(), 15))
+    ) {
+      lottery.previousExtractions.push(nextExtraction);
+      lottery.nextExtraction = undefined;
+      return true;
+    }
+    return false;
+  }
 }
