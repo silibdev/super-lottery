@@ -2,7 +2,7 @@
   display: flex;
   width: 100%;
   flex-flow: wrap;
-  align-items: baseline;
+  align-items: center;
   gap: 2rem;
 
   .chosen-numbers {
@@ -25,21 +25,10 @@
     flex-wrap: wrap;
     gap: 1rem;
 
-    .time {
-      font-weight: bold;
-    }
-
     .numbers {
       display: flex;
       flex-direction: column;
       gap: 0.5rem;
-
-      div {
-        flex: 1 0 100%;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-      }
     }
   }
 }

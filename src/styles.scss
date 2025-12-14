@@ -38,3 +38,13 @@ app-root {
     padding-top: 0.5rem;
   }
 }
+
+.label-with-icon {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  &.emp {
+    font-weight: bold;
+  }
+}
