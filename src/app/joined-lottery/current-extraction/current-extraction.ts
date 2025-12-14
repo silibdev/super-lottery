@@ -20,13 +20,7 @@ export class ToLocalDatePipe implements PipeTransform {
   styleUrl: './current-extraction.scss',
 })
 export class CurrentExtraction {
-  currentExtractionOLD = input.required<ExtractionInfo>({ alias: 'currentExtraction' });
-
-  currentExtraction = signal({
-    extractionTime: new Date().toISOString(),
-    winningNumbers: [1, 2, 3, 10, 20, 30, 21, 22, 23, 24],
-    chosenNumbers: [1, 2, 3, 10, 20, 30, 21, 22, 23, 24],
-  });
+  currentExtraction = input.required<ExtractionInfo>();
   reload = output();
 
   protected winningNumbersMap = computed<Record<number, boolean>>(() => {
