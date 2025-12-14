@@ -31,7 +31,12 @@
 
   .numbers {
     display: flex;
-    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .num-cont {
+    text-align: center;
+    flex-basis: minmax(20%, 3rem);
   }
 
   .number {

@@ -24,7 +24,7 @@ export class CurrentExtraction {
   reload = output();
 
   protected winningNumbersMap = computed<Record<number, boolean>>(() => {
-    const winningNumbers = this.currentExtraction().winningNumbers;
+    const winningNumbers = this.currentExtraction().winningNumbers || [];
     return winningNumbers.reduce((acc, num) => ({ ...acc, [num]: true }), {});
   });
 
