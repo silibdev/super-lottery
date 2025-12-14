@@ -1,4 +1,6 @@
 import { Component } from '@angular/core';
+import { version } from '../../../package.json';
+
 
 @Component({
   selector: 'app-home',
@@ -7,5 +9,5 @@ import { Component } from '@angular/core';
   styleUrl: './home.scss',
 })
 export class Home {
-
+  protected version = version;
 }
