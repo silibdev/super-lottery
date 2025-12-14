@@ -13,6 +13,7 @@ import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
 import { Button } from 'primeng/button';
 import { catchError, map, of } from 'rxjs';
+import { ExtractionInfo } from '../models';
 
 @Component({
   selector: 'app-joined-lottery',
@@ -103,11 +104,28 @@ export class JoinedLottery {
             extractionTime: new Date(extr.extractionId).toLocaleString(),
             winningNumbers: extraction.data.winningNumbers?.join(', '),
             chosenNumbers: extr.chosenNumbers.join(', '),
-          };
+          } as ExtractionInfo & { chosenNumbers: string };
         }),
       );
+      const lastExtraction = lotteriesInfo.pop();
+      this.lastExtraction.set(lastExtraction);
       return lotteriesInfo;
     },
+  });
+
+  protected lastExtraction = signal<(ExtractionInfo & { chosenNumbers: string }) | undefined>(
+    undefined,
+  );
+  protected lastExtractionForUI = computed(() => {
+    const lastExtraction = this.lastExtraction();
+    if (!lastExtraction) {
+      return undefined;
+    }
+    return {
+      extractionTime: lastExtraction.extractionTime,
+      winningNumbers: lastExtraction.winningNumbers,
+      chosenNumbers: lastExtraction.chosenNumbers,
+    };
   });
 
   protected async saveChosenNumbers() {
