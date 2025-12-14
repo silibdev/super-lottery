@@ -1,4 +1,4 @@
-import { Component, input, linkedSignal, Pipe, PipeTransform } from '@angular/core';
+import { Component, input, linkedSignal, output, Pipe, PipeTransform } from '@angular/core';
 import { ExtractionInfo } from '../../models';
 import { formatDuration, intervalToDuration, isAfter } from 'date-fns';
 
@@ -20,6 +20,7 @@ export class ToLocalDatePipe implements PipeTransform {
 })
 export class CurrentExtraction {
   currentExtraction = input.required<ExtractionInfo>();
+  reload = output();
 
   private intervalId: number | undefined;
   protected countDown = linkedSignal(() => {
@@ -30,13 +31,17 @@ export class CurrentExtraction {
     if (isAfter(now, extractionDate)) return null;
 
     if (this.intervalId) clearInterval(this.intervalId);
-    this.intervalId = setInterval(
-      () =>
-        this.countDown.set(
-          formatDuration(intervalToDuration({ start: new Date(), end: extractionDate })),
-        ),
-      1000,
-    );
+    this.intervalId = setInterval(() => {
+      const newNow = new Date();
+      if (isAfter(newNow, extractionDate)) {
+        clearInterval(this.intervalId);
+        this.reload.emit();
+        return;
+      }
+      this.countDown.set(
+        formatDuration(intervalToDuration({ start: newNow, end: extractionDate })),
+      );
+    }, 1000);
 
     return formatDuration(intervalToDuration({ start: now, end: extractionDate }));
   });

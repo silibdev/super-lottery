@@ -11,7 +11,7 @@
     <h1>Lottery: {{ lottery.value()!.name }}</h1>
     @if (lastExtractionForUI(); as lastExt) {
       <p-fieldset legend="Current Extraction">
-        <app-current-extraction [currentExtraction]="lastExt"/>
+        <app-current-extraction [currentExtraction]="lastExt" (reload)="previousExtractions.reload()"/>
       </p-fieldset>
     } @else {
       <p-progress-spinner ariaLabel="loading"/>

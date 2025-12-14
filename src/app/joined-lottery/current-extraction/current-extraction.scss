@@ -1,0 +1,31 @@
+.time-container {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  column-gap: 2rem;
+  row-gap: 0.75rem;
+
+  padding: 0.5rem 0 1.5rem 0;
+  font-size: 2rem;
+
+  .countdown {
+    font-size: 1.5rem;
+  }
+}
+
+.numbers-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+
+  font-size: 1.5rem;
+
+  & + .numbers-container {
+    padding-top: 1.5rem;
+  }
+
+  .label {
+    font-weight: bold;
+    min-width: 15rem;
+  }
+}

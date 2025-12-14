@@ -1,14 +1,22 @@
-<div>{{ currentExtraction().extractionTime | toLocalDate }}</div>
-@if (countDown()) {
-  <div>-{{ countDown() }}</div>
-}
-<div>
-  @for (number of currentExtraction().winningNumbers; track $index) {
-    <span>{{ number }}</span>
+<div class="time-container">
+  <div class="extraction-time">{{ currentExtraction().extractionTime | toLocalDate }}</div>
+  @if (countDown()) {
+    <div class="countdown">- {{ countDown() }}</div>
   }
 </div>
-<div>
-  @for (number of currentExtraction().chosenNumbers; track $index) {
-    <span>{{ number }}</span>
-  }
+<div class="numbers-container winning">
+  <div class="label">Winning numbers</div>
+  <div class="numbers">
+    @for (number of currentExtraction().winningNumbers; track $index) {
+      <span class="number">{{ number }}</span>
+    }
+  </div>
+</div>
+<div class="numbers-container chosen">
+  <div class="label">Your numbers</div>
+  <div class="numbers">
+    @for (number of currentExtraction().chosenNumbers; track $index) {
+      <span class="number">{{ number }}</span>
+    }
+  </div>
 </div>

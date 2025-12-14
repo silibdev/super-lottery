@@ -1,6 +1,10 @@
 import { AppError } from '../utils';
 import { isAfter, isBefore } from 'date-fns';
-import { ExtractionInfoForParticipant, LotteriesParticipant, LotteryInfoForParticipant } from '../../src/app/models';
+import {
+  ExtractionInfoForParticipant,
+  LotteriesParticipant,
+  LotteryInfoForParticipant,
+} from '../../src/app/models';
 import { LotteryRepository } from './repositories/lottery.repository';
 import { NumbersValidator } from './numbers.validator';
 import { LotteryDomainService } from './lottery-domain.service';
@@ -93,12 +97,13 @@ export class ParticipantService {
     if (!extraction) {
       throw new AppError(404, `Extraction ${extractionId} not found`);
     }
+
     if (isAfter(new Date(), new Date(extraction.extractionTime))) {
       return Response.json({ data: extraction });
     } else {
       return Response.json({
         data: {
-          winningNumbers: extraction.winningNumbers,
+          winningNumbers: undefined,
           extractionTime: extraction.extractionTime,
         },
       });
