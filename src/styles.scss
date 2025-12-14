@@ -26,6 +26,12 @@ app-root {
     }
   }
 
+  p-button.fab {
+    position: fixed;
+    bottom: 1rem;
+    right: 1rem;
+  }
+
   .actions-container {
     padding-bottom: 1rem;
   }

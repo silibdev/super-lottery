@@ -1,6 +1,7 @@
-import { Component, input, linkedSignal, output, Pipe, PipeTransform } from '@angular/core';
+import { Component, computed, input, linkedSignal, output, Pipe, PipeTransform, signal } from '@angular/core';
 import { ExtractionInfo } from '../../models';
 import { formatDuration, intervalToDuration, isAfter } from 'date-fns';
+import { Button } from 'primeng/button';
 
 @Pipe({
   name: 'toLocalDate',
@@ -14,13 +15,24 @@ export class ToLocalDatePipe implements PipeTransform {
 
 @Component({
   selector: 'app-current-extraction',
-  imports: [ToLocalDatePipe],
+  imports: [ToLocalDatePipe, Button],
   templateUrl: './current-extraction.html',
   styleUrl: './current-extraction.scss',
 })
 export class CurrentExtraction {
-  currentExtraction = input.required<ExtractionInfo>();
+  currentExtractionOLD = input.required<ExtractionInfo>({ alias: 'currentExtraction' });
+
+  currentExtraction = signal({
+    extractionTime: new Date().toISOString(),
+    winningNumbers: [1, 2, 3, 10, 20, 30, 21, 22, 23, 24],
+    chosenNumbers: [1, 2, 3, 10, 20, 30, 21, 22, 23, 24],
+  });
   reload = output();
+
+  protected winningNumbersMap = computed<Record<number, boolean>>(() => {
+    const winningNumbers = this.currentExtraction().winningNumbers;
+    return winningNumbers.reduce((acc, num) => ({ ...acc, [num]: true }), {});
+  });
 
   private intervalId: number | undefined;
   protected countDown = linkedSignal(() => {
@@ -45,4 +57,5 @@ export class CurrentExtraction {
 
     return formatDuration(intervalToDuration({ start: now, end: extractionDate }));
   });
+  protected skipAnimation = false;
 }

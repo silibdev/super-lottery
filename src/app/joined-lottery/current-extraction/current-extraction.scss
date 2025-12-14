@@ -28,4 +28,126 @@
     font-weight: bold;
     min-width: 15rem;
   }
+
+  .numbers {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .number {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 2.2rem; /* enough for up to 2 digits */
+    height: 2.2rem;
+    border-radius: 50%;
+    border: 1px solid;
+    font-weight: 700;
+    line-height: 1;
+    overflow: hidden;
+
+    /* Green background for correct numbers */
+    &.correct {
+      background: #10b981; /* emerald */
+      color: #064e3b; /* deep green text */
+    }
+  }
+}
+
+/* Container that holds the numbers */
+.numbers-container.winning {
+  align-items: flex-end;
+
+  .numbers {
+    &.skip-animation .number {
+      animation: none;
+      transform: none;
+      opacity: 1;
+    }
+  }
+
+  /* Each number pill */
+  .number {
+    /* Start below and rise into view */
+    transform: translateY(120%);
+    opacity: 0;
+    animation: rise-in 2s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+
+    /* Stagger: numbers appear one after another */
+    /* Adjust the step (0.12s) or extend the list as needed */
+    --stagger-step: 2s;
+
+    &:nth-child(1) {
+      animation-delay: calc(0 * var(--stagger-step));
+    }
+
+    &:nth-child(2) {
+      animation-delay: calc(1 * var(--stagger-step));
+    }
+
+    &:nth-child(3) {
+      animation-delay: calc(2 * var(--stagger-step));
+    }
+
+    &:nth-child(4) {
+      animation-delay: calc(3 * var(--stagger-step));
+    }
+
+    &:nth-child(5) {
+      animation-delay: calc(4 * var(--stagger-step));
+    }
+
+    &:nth-child(6) {
+      animation-delay: calc(5 * var(--stagger-step));
+    }
+
+    &:nth-child(7) {
+      animation-delay: calc(6 * var(--stagger-step));
+    }
+
+    &:nth-child(8) {
+      animation-delay: calc(7 * var(--stagger-step));
+    }
+
+    &:nth-child(9) {
+      animation-delay: calc(8 * var(--stagger-step));
+    }
+
+    &:nth-child(10) {
+      animation-delay: calc(9 * var(--stagger-step));
+    }
+  }
+}
+
+p-button.fab {
+  /* Start below and rise into view */
+  transform: translateY(120%);
+  opacity: 0;
+  animation: rise-in 2s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+  animation-delay: 3s;
+}
+
+/* Keyframes for the upward scroll-in */
+@keyframes rise-in {
+  0% {
+    transform: translateY(120%);
+    opacity: 0;
+  }
+  60% {
+    transform: translateY(-6%); /* slight overshoot */
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0%);
+    opacity: 1;
+  }
+}
+
+/* Respect reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .numbers-container.winning .number {
+    animation: none;
+    transform: none;
+    opacity: 1;
+  }
 }

@@ -3,12 +3,27 @@
   @if (countDown()) {
     <div class="countdown">- {{ countDown() }}</div>
   }
+  @if (!skipAnimation) {
+    <p-button
+      class="fab"
+      icon="pi pi-forward"
+      (click)="skipAnimation = true"
+    />
+  }
 </div>
 <div class="numbers-container winning">
   <div class="label">Winning numbers</div>
-  <div class="numbers">
-    @for (number of currentExtraction().winningNumbers; track $index) {
-      <span class="number">{{ number }}</span>
+  <div
+    class="numbers"
+    [class.skip-animation]="skipAnimation"
+  >
+    @for (number of currentExtraction().winningNumbers; track $index; let last = $last) {
+      <span
+        class="number"
+        [class.correct]="winningNumbersMap()[number]"
+        (animationend)="last && (skipAnimation = true)"
+      >{{ number }}</span
+      >
     }
   </div>
 </div>
