@@ -48,8 +48,8 @@
 
     /* Green background for correct numbers */
     &.correct {
-      background: #10b981; /* emerald */
-      color: #064e3b; /* deep green text */
+      background: var(--p-button-success-background); /* emerald */
+      color: var(--p-button-success-color); /* deep green text */
     }
   }
 }

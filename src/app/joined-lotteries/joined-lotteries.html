@@ -1,7 +1,7 @@
 <h1>Joined Lotteries</h1>
 <div class="actions-container">
   <p-button
-    label="Join Lottery"
+    label="Search Lottery"
     icon="pi pi-search"
     (click)="openJoinLottery()"
   ></p-button>
@@ -27,6 +27,7 @@
   <ng-template #footer>
     <p-button
       label="Join"
+      icon="pi pi-sign-in"
       [loading]="joinLotteryLoading()"
       (click)="joinLottery()"
     />
@@ -46,7 +47,7 @@
         <div><span class="pi pi-heart"></span> {{ lottery | chosenNumbers }}</div>
         <ng-template #footer>
           <p-button
-            icon="pi pi-play"
+            icon="pi pi-eye"
             [size]="'small'"
             routerLink="/lotteries/joined/{{ lottery.name }}"
           />
