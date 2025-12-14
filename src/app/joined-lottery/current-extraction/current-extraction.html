@@ -19,12 +19,11 @@
     [class.skip-animation]="skipAnimation"
   >
     @for (number of currentExtraction().winningNumbers; track $index; let last = $last) {
-      <span class="num-cont"><span
+      <span
         class="number"
         [class.correct]="winningNumbersMap()[number]"
         (animationend)="last && (skipAnimation = true)"
-      >{{ number }}</span
-      ></span>
+      >{{ number }}</span>
     }
   </div>
 </div>
@@ -32,7 +31,7 @@
   <div class="label">Your numbers</div>
   <div class="numbers">
     @for (number of currentExtraction().chosenNumbers; track $index) {
-      <span class="num-cont"><span class="number">{{ number }}</span></span>
+      <span class="number">{{ number }}</span>
     }
   </div>
 </div>
