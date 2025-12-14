@@ -1,14 +1,16 @@
-import {
-  getLotteriesOwnersStore,
-  getLotteriesParticipantStore,
-  getLotteriesStore,
-} from '../../utils';
 import { LotteriesParticipant, LotteryInfo, LotteryOwner } from '../../../src/app/models';
+import { getStore } from '@netlify/blobs';
 
 export class LotteryRepository {
-  private static readonly LOTTERIES_STORE = getLotteriesStore();
-  private static readonly LOTTERIES_PARTICIPANT_STORE = getLotteriesParticipantStore();
-  private static readonly LOTTERIES_OWNERS_STORE = getLotteriesOwnersStore();
+  private static readonly LOTTERIES_STORE = getStore({ name: 'lotteries', consistency: 'strong' });
+  private static readonly LOTTERIES_PARTICIPANT_STORE = getStore({
+    name: 'lotteries-owners',
+    consistency: 'strong',
+  });
+  private static readonly LOTTERIES_OWNERS_STORE = getStore({
+    name: 'lotteries-participant',
+    consistency: 'strong',
+  });
 
   // Lotteries
   static async getLottery(id: string): Promise<LotteryInfo | undefined> {
