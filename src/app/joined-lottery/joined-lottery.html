@@ -1,7 +1,7 @@
 @switch (lottery.status()) {
   @case ('loading') {
     <div class="loader-container">
-      <p-progress-spinner ariaLabel="loading"/>
+      <p-progress-spinner class="full" ariaLabel="loading"/>
     </div>
   }
   @case ('error') {
@@ -9,12 +9,14 @@
   }
   @case ('resolved') {
     <h1>Lottery: {{ lottery.value()!.name }}</h1>
-    @if (lastExtractionForUI(); as lastExt) {
-      <p-fieldset legend="Current Extraction">
-        <app-current-extraction [currentExtraction]="lastExt" (reload)="previousExtractions.reload()"/>
-      </p-fieldset>
-    } @else {
-      <p-progress-spinner ariaLabel="loading"/>
+    @if (previousExtractions.status() === 'loading') {
+      <p-progress-spinner class="full" ariaLabel="loading"/>
+    } @else if (previousExtractions.status() === 'resolved') {
+      @if (lastExtractionForUI(); as lastExt) {
+        <p-fieldset legend="Current Extraction">
+          <app-current-extraction [currentExtraction]="lastExt" (reload)="previousExtractions.reload()"/>
+        </p-fieldset>
+      }
     }
     <p-fieldset
       legend="Numbers for next extraction"
@@ -54,9 +56,7 @@
 
     @switch (previousExtractions.status()) {
       @case ('loading') {
-        <div class="loader-container">
-          <p-progress-spinner ariaLabel="loading"/>
-        </div>
+        <p-progress-spinner class="full" ariaLabel="loading"/>
       }
       @case ('resolved') {
         @let prevExtr = previousExtractions.value();

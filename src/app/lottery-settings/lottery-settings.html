@@ -1,8 +1,6 @@
 @switch (lottery.status()) {
   @case ('loading') {
-    <div class="loader-container">
-      <p-progress-spinner ariaLabel="loading"/>
-    </div>
+    <p-progress-spinner class="full" ariaLabel="loading"/>
   }
   @case ('error') {
     <app-go-home-button/>

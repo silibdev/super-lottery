@@ -40,9 +40,7 @@
 </p-dialog>
 
 @if (lotteries.isLoading()) {
-  <div class="loader-container">
-    <p-progress-spinner ariaLabel="loading"/>
-  </div>
+  <p-progress-spinner class="full" ariaLabel="loading"/>
 } @else if (lotteries.hasValue()) {
   <div class="lotteries-container">
     @for (lottery of lotteries.value(); track lottery.name) {
