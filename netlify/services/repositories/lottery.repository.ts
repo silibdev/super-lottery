@@ -3,11 +3,11 @@ import { getStore } from '@netlify/blobs';
 
 export class LotteryRepository {
   private static readonly LOTTERIES_STORE = getStore({ name: 'lotteries', consistency: 'strong' });
-  private static readonly LOTTERIES_PARTICIPANT_STORE = getStore({
+  private static readonly LOTTERIES_OWNERS_STORE = getStore({
     name: 'lotteries-owners',
     consistency: 'strong',
   });
-  private static readonly LOTTERIES_OWNERS_STORE = getStore({
+  private static readonly LOTTERIES_PARTICIPANT_STORE = getStore({
     name: 'lotteries-participant',
     consistency: 'strong',
   });
