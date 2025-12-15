@@ -1,5 +1,5 @@
 import { Component, inject, Pipe, PipeTransform, resource, signal } from '@angular/core';
-import { Button } from 'primeng/button';
+import { Button, ButtonDirective, ButtonIcon } from 'primeng/button';
 import { ProgressSpinner } from 'primeng/progressspinner';
 import { JoinedLotteriesService } from './joined-lotteries.service';
 import { AppMessagesService } from '../app-messages/app-messages.service';
@@ -49,6 +49,8 @@ class ChosenNumbersTimePipe implements PipeTransform {
     Card,
     RouterLink,
     NextExtractionTimePipe,
+    ButtonDirective,
+    ButtonIcon,
   ],
   templateUrl: './joined-lotteries.html',
   styleUrl: './joined-lotteries.scss',

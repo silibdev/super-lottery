@@ -1,10 +1,11 @@
 <p-mega-menu [model]="menuItems">
   <ng-template #start>
-    <p-button
-      label="Super-Lottery"
-      link
+    <a
+      pButton
+      [text]="true"
       routerLink="home"
-    />
+    ><span pButtonLabel>Super-Lottery</span></a
+    >
   </ng-template>
 </p-mega-menu>
 

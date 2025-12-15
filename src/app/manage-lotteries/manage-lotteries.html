@@ -41,7 +41,10 @@
 </p-dialog>
 
 @if (lotteries.isLoading()) {
-  <p-progress-spinner class="full" ariaLabel="loading"/>
+  <p-progress-spinner
+    class="full"
+    ariaLabel="loading"
+  />
 } @else if (lotteries.hasValue()) {
   <div class="lotteries-container">
     @for (lottery of lotteries.value(); track lottery.name) {
@@ -54,11 +57,15 @@
         <div><span class="pi pi-arrow-left"></span> {{ lottery | lastExtractionTime }}</div>
         <ng-template #footer>
           <span class="users"><span class="pi pi-users"></span> {{ lottery.participants }}</span>
-          <p-button
-            icon="pi pi-cog"
+          <a
+            pButton
             [size]="'small'"
             routerLink="/lotteries/manage/{{ lottery.name }}"
-          />
+          ><span
+            pButtonIcon
+            class="pi pi-cog"
+          ></span
+          ></a>
         </ng-template>
       </p-card>
     }

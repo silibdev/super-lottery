@@ -1,5 +1,5 @@
 import { Component, inject, Pipe, PipeTransform, resource, signal } from '@angular/core';
-import { Button } from 'primeng/button';
+import { Button, ButtonDirective, ButtonIcon } from 'primeng/button';
 import { ManageLotteriesService } from './manage-lotteries.service';
 import { ProgressSpinner } from 'primeng/progressspinner';
 import { Dialog } from 'primeng/dialog';
@@ -64,6 +64,8 @@ class CountExtractionsPipe implements PipeTransform {
     CountExtractionsPipe,
     LastExtractionTimePipe,
     NextExtractionTimePipe,
+    ButtonDirective,
+    ButtonIcon,
   ],
   templateUrl: './manage-lotteries.html',
   styleUrl: './manage-lotteries.scss',

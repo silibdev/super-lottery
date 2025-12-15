@@ -36,7 +36,10 @@
 </p-dialog>
 
 @if (lotteries.isLoading()) {
-  <p-progress-spinner class="full" ariaLabel="loading"/>
+  <p-progress-spinner
+    class="full"
+    ariaLabel="loading"
+  />
 } @else if (lotteries.hasValue()) {
   <div class="lotteries-container">
     @for (lottery of lotteries.value(); track lottery.name) {
@@ -47,14 +50,17 @@
         <div><span class="pi pi-arrow-right"></span> {{ lottery | nextExtractionTime }}</div>
         <div><span class="pi pi-heart"></span> {{ lottery | chosenNumbers }}</div>
         <ng-template #footer>
-          <p-button
-            icon="pi pi-eye"
+          <a
+            pButton
             [size]="'small'"
             routerLink="/lotteries/joined/{{ lottery.name }}"
-          />
+          ><span
+            pButtonIcon
+            class="pi pi-eye"
+          ></span
+          ></a>
         </ng-template>
       </p-card>
     }
   </div>
 }
-

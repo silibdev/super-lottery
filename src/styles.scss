@@ -26,6 +26,10 @@ app-root {
     }
   }
 
+  a {
+    text-decoration: none;
+  }
+
   p-button.fab {
     position: fixed;
     bottom: 1rem;
