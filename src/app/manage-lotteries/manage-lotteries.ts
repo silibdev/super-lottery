@@ -18,9 +18,9 @@ import { Card } from 'primeng/card';
 })
 class LastExtractionTimePipe implements PipeTransform {
   transform(lottery: LotteryInfo): string {
-    const lastExtractionTime = lottery.previousExtractions
-      .sort((a, b) => a.extractionTime.localeCompare(b.extractionTime))
-      .pop()?.extractionTime;
+    const lastExtractionTime = lottery.previousExtractions.sort((a, b) =>
+      b.extractionTime.localeCompare(a.extractionTime),
+    )[0]?.extractionTime;
     return lastExtractionTime ? new Date(lastExtractionTime).toLocaleString() : 'None';
   }
 }
