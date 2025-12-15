@@ -23,10 +23,12 @@ export class CurrentExtraction {
   currentExtraction = input.required<ExtractionInfo>();
   reload = output();
 
-  protected winningNumbersMap = computed<Record<number, boolean>>(() => {
-    const winningNumbers = this.currentExtraction().winningNumbers || [];
-    return winningNumbers.reduce((acc, num) => ({ ...acc, [num]: true }), {});
+  protected chosenNumbersMap = computed<Record<number, boolean>>(() => {
+    const chosenNumbers = this.currentExtraction().chosenNumbers || [];
+    return chosenNumbers.reduce((acc, num) => ({ ...acc, [num]: true }), {});
   });
+
+  protected winningNumbersMap = signal<Record<number, boolean>>({});
 
   private intervalId: number | undefined;
   protected countDown = linkedSignal(() => {
@@ -51,5 +53,16 @@ export class CurrentExtraction {
 
     return formatDuration(intervalToDuration({ start: now, end: extractionDate }));
   });
-  protected skipAnimation = false;
+  protected skipAnimation = signal(false);
+
+  protected handleAnimationStart(number: number, delay: number) {
+    setTimeout(
+      () =>
+        this.winningNumbersMap.update((map) => {
+          map[number] = true;
+          return { ...map };
+        }),
+      delay,
+    );
+  }
 }

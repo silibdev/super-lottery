@@ -33,6 +33,10 @@
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
+
+    @media (max-width: 493px) {
+      width: 13rem;
+    }
   }
 
   .number {

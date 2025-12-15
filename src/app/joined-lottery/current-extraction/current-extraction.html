@@ -3,12 +3,12 @@
   @if (countDown()) {
     <div class="countdown">- {{ countDown() }}</div>
   }
-  @if (!skipAnimation) {
+  @if (!skipAnimation()) {
     <p-button
       class="fab"
       icon="pi pi-forward"
       label="Skip animation"
-      (click)="skipAnimation = true"
+      (click)="skipAnimation.set(true)"
     />
   }
 </div>
@@ -16,14 +16,17 @@
   <div class="label">Winning numbers</div>
   <div
     class="numbers"
-    [class.skip-animation]="skipAnimation"
+    [class.skip-animation]="skipAnimation()"
   >
     @for (number of currentExtraction().winningNumbers; track $index; let last = $last) {
       <span
         class="number"
-        [class.correct]="winningNumbersMap()[number]"
-        (animationend)="last && (skipAnimation = true)"
-      >{{ number }}</span>
+        [class.correct]="chosenNumbersMap()[number] || false"
+        (animationend)="last && skipAnimation.set(true)"
+        (animationstart)="handleAnimationStart(number, 200)"
+        (animationcancel)="handleAnimationStart(number, 0)"
+      >{{ number }}</span
+      >
     }
   </div>
 </div>
@@ -31,7 +34,11 @@
   <div class="label">Your numbers</div>
   <div class="numbers">
     @for (number of currentExtraction().chosenNumbers; track $index) {
-      <span class="number">{{ number }}</span>
+      <span
+        class="number"
+        [class.correct]="winningNumbersMap()[number] || false"
+      >{{ number }}</span
+      >
     }
   </div>
 </div>
