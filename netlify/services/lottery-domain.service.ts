@@ -15,6 +15,7 @@ export class LotteryDomainService {
     const lotteries = await Promise.all(
       owner.lotteries.map(async (lotteryId) => {
         const lottery = await this.getLotteryEntityWithRollover(lotteryId);
+        await this.getParticipantsNames(lottery);
         return lottery;
       }),
     );
@@ -61,6 +62,7 @@ export class LotteryDomainService {
   static async getLottery({ lotteryId, clientId }: { lotteryId: string; clientId: string }) {
     const lottery = await this.getLotteryEntityWithRollover(lotteryId);
     this.assertOwner(lottery, clientId);
+    await this.getParticipantsNames(lottery);
     return Response.json({ data: lottery });
   }
 
@@ -93,6 +95,9 @@ export class LotteryDomainService {
     lottery.owner = clientId;
 
     await LotteryRepository.saveLottery(lotteryId, lottery);
+
+    await this.getParticipantsNames(lottery);
+    
     return Response.json({ data: lottery });
   }
 
@@ -106,12 +111,16 @@ export class LotteryDomainService {
       await LotteryRepository.saveLottery(lotteryId, lottery);
     }
 
+    return lottery;
+  }
+
+  private static async getParticipantsNames(lottery: LotteryInfo): Promise<LotteryInfo> {    
     const participantNames = await Promise.all(
       lottery.participants.map((clientId) => LotteryRepository.getClientName(clientId)),
     );
 
     lottery.participants = participantNames.filter((name) => !!name) as string[];
-
+  
     return lottery;
   }
 
