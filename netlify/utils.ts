@@ -16,7 +16,7 @@ export const getClientId = async (context: Context) => {
       secure: true,
     });
     console.log('calling random name');
-    const randomUser = await fetch('https://randomuser.me/api/?inc=name').then((r) => r.json());
+    const randomUser = await fetch('https://randomuser.me/api/?inc=name').then((r) => r.text());
     console.log('random user', randomUser);
     const { first, last } = randomUser.results[0].name;
     await LotteryRepository.saveClientName(clientId, `${first} ${last}`);
