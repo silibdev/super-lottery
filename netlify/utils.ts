@@ -7,7 +7,12 @@ export const getClientId = async (context: Context) => {
   let clientId = context.cookies.get(SUPER_LOTTERY_CLIENT_ID);
   if (!clientId) {
     clientId = crypto.randomUUID();
-    context.cookies.set(SUPER_LOTTERY_CLIENT_ID, clientId);
+    context.cookies.set({
+      name: SUPER_LOTTERY_CLIENT_ID,
+      value: clientId,
+      httpOnly: true,
+      secure: true,
+    });
     const randomUser = await fetch('https://randomuser.me/api/?inc=name').then((r) => r.json());
     const { first, last } = randomUser.results[0].name;
     await LotteryRepository.saveClientName(clientId, `${first} ${last}`);
