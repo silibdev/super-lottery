@@ -1,7 +1,7 @@
 export interface LotteryInfo {
   name: string;
   owner?: string;
-  participants: number;
+  participants: string[];
   previousExtractions: ExtractionInfo[];
   nextExtraction?: ExtractionInfo;
 }

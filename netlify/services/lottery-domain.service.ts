@@ -45,7 +45,7 @@ export class LotteryDomainService {
     const lottery: LotteryInfo = {
       name: lotteryName,
       owner: clientId,
-      participants: 0,
+      participants: [],
       previousExtractions: [],
     } as LotteryInfo;
 
@@ -105,6 +105,13 @@ export class LotteryDomainService {
     if (updated) {
       await LotteryRepository.saveLottery(lotteryId, lottery);
     }
+
+    const participantNames = await Promise.all(
+      lottery.participants.map((clientId) => LotteryRepository.getClientName(clientId)),
+    );
+
+    lottery.participants = participantNames.filter((name) => !!name) as string[];
+
     return lottery;
   }
 

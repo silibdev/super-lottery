@@ -11,7 +11,10 @@ export class LotteryRepository {
     name: 'lotteries-participant',
     consistency: 'strong',
   });
-  private static readonly CLIENT_NAMES = getStore({ name: 'client-names', consistency: 'strong' });
+  private static readonly CLIENT_NAMES_STORE = getStore({
+    name: 'client-names',
+    consistency: 'strong',
+  });
 
   // Lotteries
   static async getLottery(id: string): Promise<LotteryInfo | undefined> {
@@ -41,14 +44,10 @@ export class LotteryRepository {
   }
 
   static async getClientName(clientId: string): Promise<string | undefined> {
-    return await this.CLIENT_NAMES.get(clientId, { type: 'text' });
+    return await this.CLIENT_NAMES_STORE.get(clientId, { type: 'text' });
   }
 
   static async saveClientName(clientId: string, name: string): Promise<void> {
-    await this.CLIENT_NAMES.set(clientId, name);
-  }
-
-  static async hasClientName(clientId: string): Promise<boolean> {
-    return !!(await this.CLIENT_NAMES.getMetadata(clientId));
+    await this.CLIENT_NAMES_STORE.set(clientId, name);
   }
 }

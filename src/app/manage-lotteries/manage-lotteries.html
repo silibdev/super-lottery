@@ -56,7 +56,7 @@
         <div><span class="pi pi-arrow-right"></span> {{ lottery | nextExtractionTime }}</div>
         <div><span class="pi pi-arrow-left"></span> {{ lottery | lastExtractionTime }}</div>
         <ng-template #footer>
-          <span class="users"><span class="pi pi-users"></span> {{ lottery.participants }}</span>
+          <span class="users"><span class="pi pi-users"></span> {{ lottery.participants.length }}</span>
           <a
             pButton
             [size]="'small'"

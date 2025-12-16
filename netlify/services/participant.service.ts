@@ -1,10 +1,6 @@
 import { AppError } from '../utils';
 import { isAfter, isBefore } from 'date-fns';
-import {
-  ExtractionInfoForParticipant,
-  LotteriesParticipant,
-  LotteryInfoForParticipant,
-} from '../../src/app/models';
+import { ExtractionInfoForParticipant, LotteriesParticipant, LotteryInfoForParticipant } from '../../src/app/models';
 import { LotteryRepository } from './repositories/lottery.repository';
 import { NumbersValidator } from './numbers.validator';
 import { LotteryDomainService } from './lottery-domain.service';
@@ -38,7 +34,7 @@ export class ParticipantService {
         chosenNumbers: [],
       };
       participant.joinedLotteries.push(lotteryForParticipant);
-      lottery.participants++;
+      lottery.participants.push(clientId);
     }
 
     await Promise.all([
