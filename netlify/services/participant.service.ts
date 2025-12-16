@@ -146,6 +146,7 @@ export class ParticipantService {
   }
 
   private static async getParticipantUpdatingLastExtraction(clientId: string) {
+    console.log('get part with update', clientId);
     const participant: LotteriesParticipant | undefined =
       await LotteryRepository.getParticipant(clientId);
     if (!participant) {
