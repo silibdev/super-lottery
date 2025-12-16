@@ -1,6 +1,14 @@
 /* You can add global styles to this file, and also import other style files */
 @import "primeicons/primeicons.css";
 
+html {
+  font-family: Tahoma, serif;
+
+  @media (any-pointer: coarse) {
+    font-size: 18px;
+  }
+}
+
 app-root {
   .loader-container {
     display: flex;
