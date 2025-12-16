@@ -9,7 +9,7 @@ export const config: Config = {
 export default async (req: Request, context: Context) => handleRequest(req, context, handler);
 
 const handler = async (req: Request, context: Context) => {
-  const clientId = getClientId(context);
+  const clientId = await getClientId(context);
   const lotteryId = getJoinedLotteryIdFromUrl(req.url, context);
 
   switch (req.method) {

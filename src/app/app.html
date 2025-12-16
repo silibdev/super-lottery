@@ -7,7 +7,43 @@
     ><span pButtonLabel>Super-Lottery</span></a
     >
   </ng-template>
+  <ng-template #end>
+    <p-button
+      [loading]="name.isLoading()"
+      [label]="name.value()?.data"
+      icon="pi pi-user"
+      (click)="changeNameDialogVisible.set(true)"
+    ></p-button>
+  </ng-template>
 </p-mega-menu>
+
+<p-dialog
+  header="Change name"
+  [visible]="changeNameDialogVisible()"
+  (visibleChange)="changeNameDialogVisible.set($event)"
+  [modal]="true"
+  [dismissableMask]="false"
+  [draggable]="false"
+  [resizable]="false"
+  position="top"
+>
+  <div>
+    <p-float-label variant="in">
+      <label>Name</label>
+      <input
+        pInputText
+        [formControl]="nameControl"
+      />
+    </p-float-label>
+  </div>
+  <ng-template #footer>
+    <p-button
+      label="Change"
+      [loading]="changeNameLoading()"
+      (click)="changeName()"
+    />
+  </ng-template>
+</p-dialog>
 
 <app-app-messages/>
 

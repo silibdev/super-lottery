@@ -7,7 +7,7 @@ export const config: Config = { path: ['/api/lotteries/:lotteryId/extractions/:e
 export default async (req: Request, context: Context) => handleRequest(req, context, handler);
 
 const handler = async (req: Request, context: Context) => {
-  const clientId = getClientId(context);
+  const clientId = await getClientId(context);
   switch (req.method) {
     case 'GET':
       const lotteryId = getLotteryIdFromUrl(req.url, context);
