@@ -38,6 +38,7 @@ app-root {
 
   p-button.fab {
     position: fixed;
+    z-index: 99999;
     bottom: 1rem;
     right: 1rem;
   }
