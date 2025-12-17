@@ -1,13 +1,14 @@
-import { AppError } from '../utils';
+import { AppError, validateNumbers } from '../utils';
 import { addMinutes, isBefore } from 'date-fns';
 import { ExtractionInfo, LotteryInfo, LotteryOwner } from '../../src/app/models';
 import { LotteryRepository } from './repositories/lottery.repository';
-import { NumbersValidator } from './numbers.validator';
 
 export class LotteryDomainService {
+  constructor(private lotteryRepository: LotteryRepository) {}
+
   // Owner-facing: load all lotteries for an owner
-  static async loadLotteries({ clientId }: { clientId: string }) {
-    const owner = await LotteryRepository.getOwner(clientId);
+  async loadLotteries({ clientId }: { clientId: string }) {
+    const owner = await this.lotteryRepository.getOwner(clientId);
     if (!owner) {
       return Response.json({ data: [] });
     }
@@ -24,7 +25,7 @@ export class LotteryDomainService {
   }
 
   // Owner-facing: create a new lottery
-  static async createLottery({ lotteryName, clientId }: { clientId: string; lotteryName: string }) {
+  async createLottery({ lotteryName, clientId }: { clientId: string; lotteryName: string }) {
     if (!lotteryName) {
       return Response.json({ data: 'Missing name' }, { status: 400 });
     }
@@ -32,12 +33,12 @@ export class LotteryDomainService {
       return Response.json({ data: `${lotteryName} is an invalid name` }, { status: 400 });
     }
 
-    const existing = await LotteryRepository.getLottery(lotteryName);
+    const existing = await this.lotteryRepository.getLottery(lotteryName);
     if (existing) {
       return Response.json({ data: `Lottery ${lotteryName} already exists` }, { status: 400 });
     }
 
-    let owner = await LotteryRepository.getOwner(clientId);
+    let owner = await this.lotteryRepository.getOwner(clientId);
     if (!owner) {
       owner = { id: clientId, lotteries: [] } as LotteryOwner;
     }
@@ -51,15 +52,15 @@ export class LotteryDomainService {
     } as LotteryInfo;
 
     await Promise.all([
-      LotteryRepository.saveOwner(clientId, owner),
-      LotteryRepository.saveLottery(lotteryName, lottery),
+      this.lotteryRepository.saveOwner(clientId, owner),
+      this.lotteryRepository.saveLottery(lotteryName, lottery),
     ]);
 
     return Response.json({ data: 'ok' });
   }
 
   // Owner-facing: get single lottery (authorized)
-  static async getLottery({ lotteryId, clientId }: { lotteryId: string; clientId: string }) {
+  async getLottery({ lotteryId, clientId }: { lotteryId: string; clientId: string }) {
     const lottery = await this.getLotteryEntityWithRollover(lotteryId);
     this.assertOwner(lottery, clientId);
     await this.getParticipantsNames(lottery);
@@ -67,7 +68,7 @@ export class LotteryDomainService {
   }
 
   // Owner-facing: schedule next extraction
-  static async createNextExtraction({
+  async createNextExtraction({
     extractionInfo,
     clientId,
     lotteryId,
@@ -88,51 +89,51 @@ export class LotteryDomainService {
       );
     }
 
-    extractionInfo.winningNumbers = NumbersValidator.validate(extractionInfo.winningNumbers!);
+    extractionInfo.winningNumbers = validateNumbers(extractionInfo.winningNumbers!);
     lottery.nextExtraction = extractionInfo;
 
     // Preserve original behavior of setting owner
     lottery.owner = clientId;
 
-    await LotteryRepository.saveLottery(lotteryId, lottery);
+    await this.lotteryRepository.saveLottery(lotteryId, lottery);
 
     await this.getParticipantsNames(lottery);
-    
+
     return Response.json({ data: lottery });
   }
 
-  static async getLotteryEntityWithRollover(lotteryId: string): Promise<LotteryInfo> {
-    const lottery = await LotteryRepository.getLottery(lotteryId);
+  async getLotteryEntityWithRollover(lotteryId: string): Promise<LotteryInfo> {
+    const lottery = await this.lotteryRepository.getLottery(lotteryId);
     if (!lottery) {
       throw new AppError(404, `Lottery ${lotteryId} not found`);
     }
     const updated = await this.finalizeDueNextExtraction(lottery);
     if (updated) {
-      await LotteryRepository.saveLottery(lotteryId, lottery);
+      await this.lotteryRepository.saveLottery(lotteryId, lottery);
     }
 
     return lottery;
   }
 
-  private static async getParticipantsNames(lottery: LotteryInfo): Promise<LotteryInfo> {    
+  private async getParticipantsNames(lottery: LotteryInfo): Promise<LotteryInfo> {
     const participantNames = await Promise.all(
-      lottery.participants.map((clientId) => LotteryRepository.getClientName(clientId)),
+      lottery.participants.map((clientId) => this.lotteryRepository.getClientName(clientId)),
     );
 
     lottery.participants = participantNames.filter((name) => !!name) as string[];
-  
+
     return lottery;
   }
 
   // Helpers
-  private static assertOwner(lottery: LotteryInfo, clientId: string) {
+  private assertOwner(lottery: LotteryInfo, clientId: string) {
     if (lottery.owner !== clientId) {
       throw new AppError(403, `You are not allowed to see ${lottery.name}`);
     }
   }
 
   // Promote nextExtraction to previous if within the 15-minute window
-  private static async finalizeDueNextExtraction(lottery: LotteryInfo): Promise<boolean> {
+  private async finalizeDueNextExtraction(lottery: LotteryInfo): Promise<boolean> {
     const nextExtraction = lottery.nextExtraction;
     if (
       nextExtraction &&

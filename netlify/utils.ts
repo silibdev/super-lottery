@@ -4,7 +4,7 @@ import { faker } from '@faker-js/faker';
 
 const SUPER_LOTTERY_CLIENT_ID = 'super-lottery-client-id';
 
-export const getClientId = async (context: Context) => {
+export const getClientId = async (context: Context, lotteryRepository: LotteryRepository) => {
   let clientId = context.cookies.get(SUPER_LOTTERY_CLIENT_ID);
   if (!clientId) {
     clientId = crypto.randomUUID();
@@ -19,7 +19,7 @@ export const getClientId = async (context: Context) => {
         .split(' ')
         .map(capitalizeFirstLetter)
         .join(' ');
-    await LotteryRepository.saveClientName(clientId, randomUsername);
+    await lotteryRepository.saveClientName(clientId, randomUsername);
   }
   return clientId;
 };
@@ -54,6 +54,16 @@ export const getExtractionIdFromUrl = (url: string, context: Context) => {
   } else {
     return undefined;
   }
+};
+
+export const validateNumbers = (numbers: number[]): number[] => {
+  if (!numbers || numbers.length !== 10) {
+    throw new AppError(400, `Invalid numbers length ${numbers?.length}. It must be 10.`);
+  }
+  if (new Set(numbers).size !== 10) {
+    throw new AppError(400, `Invalid winning numbers. They must be unique.`);
+  }
+  return [...numbers].sort();
 };
 
 export class AppError extends Error {
