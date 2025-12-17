@@ -5,6 +5,7 @@
         [severity]="message.type"
         [closable]="true"
         (onClose)="closeMessage(message)"
+        [life]="message.life"
       >{{ message.description }}
       </p-message>
     }

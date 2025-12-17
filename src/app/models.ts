@@ -41,6 +41,7 @@ export interface LotteryOwner {
 export interface AppMessage {
   type: 'success' | 'info' | 'warn' | 'error' | 'secondary' | 'contrast';
   description: string;
+  life?: number;
 }
 
 export interface AppResponse<D> {
