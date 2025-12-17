@@ -1,5 +1,5 @@
 /* You can add global styles to this file, and also import other style files */
-@import "primeicons/primeicons.css";
+@import 'primeicons/primeicons.css';
 
 html {
   font-family: Tahoma, serif;
@@ -48,13 +48,12 @@ app-root {
   }
 
   .lotteries-container {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
     gap: 0.5rem;
-    flex-wrap: wrap;
-  }
 
-  .lottery-card {
-    width: 16rem;
+    .lottery-card {
+    }
   }
 
   p-fieldset + p-fieldset {
@@ -71,6 +70,12 @@ app-root {
   display: flex;
   align-items: center;
   justify-content: space-between;
+
+  .actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
 }
 
 .label-with-icon {
