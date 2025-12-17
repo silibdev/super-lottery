@@ -33,15 +33,16 @@
             <input
               pInputText
               formControlName="chosenNumbers"
+              placeholder="0,1,2,3,4,5,6,7,8,9"
             />
           </p-float-label>
           <p-message
             severity="secondary"
             size="small"
             variant="simple"
-          >0-99, separated by comma
+          >10 numbers (0-99) separated by comma
             @if (currentNumbersInserted$ | async; as cni) {
-              [inserted {{ cni }} number]
+              [{{ cni }} inserted]
             }
           </p-message>
         </div>

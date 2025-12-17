@@ -58,10 +58,10 @@ export const getExtractionIdFromUrl = (url: string, context: Context) => {
 
 export const validateNumbers = (numbers: number[]): number[] => {
   if (!numbers || numbers.length !== 10) {
-    throw new AppError(400, `Invalid numbers length ${numbers?.length}. It must be 10.`);
+    throw new AppError(400, `Not enough numbers (${numbers?.length}). They must be 10.`);
   }
   if (new Set(numbers).size !== 10) {
-    throw new AppError(400, `Invalid winning numbers. They must be unique.`);
+    throw new AppError(400, `Invalid numbers. No duplicates allowed.`);
   }
   return [...numbers].sort();
 };

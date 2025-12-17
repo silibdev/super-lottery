@@ -91,7 +91,8 @@ export class JoinedLottery {
           numbers
             .split(',')
             .filter((n) => n.trim() !== '')
-            .map((n) => parseInt(n.trim(), 10)).length,
+            .map((n) => parseInt(n.trim(), 10))
+            .filter((n) => !!n).length,
       ),
       catchError((err) => of(null)),
     );

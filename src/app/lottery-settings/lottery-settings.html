@@ -32,9 +32,9 @@
             severity="secondary"
             size="small"
             variant="simple"
-          >0-99, separated by comma
+          >10 numbers (0-99) separated by comma
             @if (currentNumbersInserted$ | async; as cni) {
-              [inserted {{ cni }} number]
+              [{{ cni }} inserted]
             }
           </p-message>
         </div>
