@@ -1,29 +1,30 @@
 import type { Context } from '@netlify/functions';
 import { LotteryRepository } from './services/repositories/lottery.repository';
+import { faker } from '@faker-js/faker';
 
 const SUPER_LOTTERY_CLIENT_ID = 'super-lottery-client-id';
 
 export const getClientId = async (context: Context) => {
   let clientId = context.cookies.get(SUPER_LOTTERY_CLIENT_ID);
-  console.log('saved clientId', clientId);
   if (!clientId) {
     clientId = crypto.randomUUID();
-    console.log('generated clientId', clientId);
     context.cookies.set({
       name: SUPER_LOTTERY_CLIENT_ID,
       value: clientId,
       httpOnly: true,
       secure: true,
     });
-    console.log('calling random name');
-    //const randomUser = await fetch('https://randomuser.me/api/?inc=name').then((r) => r.text());
-    const randomUser = { results: [{name: {first: 'your', last: 'name'}}]};
-    console.log('random user', randomUser);
-    const { first, last } = randomUser.results[0].name;
-    await LotteryRepository.saveClientName(clientId, `${first} ${last}`);
+    const randomUsername =
+      `${faker.color.human()} ${faker.hacker.abbreviation()} ${faker.animal.type()}`
+        .split(' ')
+        .map(capitalizeFirstLetter)
+        .join(' ');
+    await LotteryRepository.saveClientName(clientId, randomUsername);
   }
   return clientId;
 };
+
+const capitalizeFirstLetter = (string: string) => string.charAt(0).toUpperCase() + string.slice(1);
 
 export const getLotteryIdFromUrl = (url: string, context: Context) => {
   console.log('context params', context.params);

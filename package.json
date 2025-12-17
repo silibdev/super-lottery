@@ -44,6 +44,7 @@
     "@angular/build": "^21.0.3",
     "@angular/cli": "^21.0.3",
     "@angular/compiler-cli": "^21.0.0",
+    "@faker-js/faker": "^10.1.0",
     "jsdom": "^27.1.0",
     "netlify-cli": "^23.12.3",
     "prettier": "3.7.4",
