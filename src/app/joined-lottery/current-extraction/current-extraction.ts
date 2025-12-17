@@ -1,4 +1,13 @@
-import { Component, computed, input, linkedSignal, output, Pipe, PipeTransform, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  input,
+  linkedSignal,
+  output,
+  Pipe,
+  PipeTransform,
+  signal,
+} from '@angular/core';
 import { ExtractionInfo } from '../../models';
 import { formatDuration, intervalToDuration, isAfter } from 'date-fns';
 import { Button } from 'primeng/button';
@@ -53,7 +62,7 @@ export class CurrentExtraction {
 
     return formatDuration(intervalToDuration({ start: now, end: extractionDate }));
   });
-  protected skipAnimation = signal(false);
+  protected skipAnimation = linkedSignal(() => !this.currentExtraction().winningNumbers?.length);
 
   protected handleAnimationStart(number: number, delay: number) {
     setTimeout(

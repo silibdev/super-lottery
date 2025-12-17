@@ -1,4 +1,4 @@
-import { Component, computed, inject, resource, signal } from '@angular/core';
+import { Component, computed, effect, inject, resource, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { AppMessagesService } from '../app-messages/app-messages.service';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -15,6 +15,7 @@ import { Button } from 'primeng/button';
 import { catchError, map, of } from 'rxjs';
 import { ExtractionInfo } from '../models';
 import { CurrentExtraction } from './current-extraction/current-extraction';
+import { differenceInSeconds } from 'date-fns';
 
 @Component({
   selector: 'app-joined-lottery',
@@ -130,6 +131,23 @@ export class JoinedLottery {
       chosenNumbers: lastExtraction.chosenNumbers,
     };
   });
+
+  constructor() {
+    let timeoutId: number | undefined;
+    effect(() => {
+      const lastExtraction = this.lastExtractionForUI();
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+      if (!lastExtraction) return;
+      const timeoutSeconds = differenceInSeconds(
+        new Date(),
+        new Date(lastExtraction.extractionTime),
+      );
+      if (timeoutSeconds <= 0) return;
+      timeoutId = setTimeout(() => this.previousExtractions.reload(), timeoutSeconds * 1000);
+    });
+  }
 
   protected async saveChosenNumbers() {
     const extraction = this.nextExtractionForm.value;
