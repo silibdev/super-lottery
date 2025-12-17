@@ -15,6 +15,7 @@ import { AsyncPipe } from '@angular/common';
 import { Fieldset } from 'primeng/fieldset';
 import { addMinutes } from 'date-fns';
 import { GoHomeButton } from '../go-home-button/go-home-button';
+import { ShareLotteryButton } from '../share-lottery-button/share-lottery-button';
 
 @Component({
   selector: 'app-lottery-settings',
@@ -29,6 +30,7 @@ import { GoHomeButton } from '../go-home-button/go-home-button';
     AsyncPipe,
     Fieldset,
     GoHomeButton,
+    ShareLotteryButton,
   ],
   templateUrl: './lottery-settings.html',
   styleUrl: './lottery-settings.scss',

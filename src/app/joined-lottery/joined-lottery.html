@@ -8,7 +8,8 @@
     <app-go-home-button/>
   }
   @case ('resolved') {
-    <h1>Lottery: {{ lottery.value()!.name }}</h1>
+    <h1 class="title"><span>Lottery: {{ lottery.value()!.name }}</span><span class="actions"><app-share-lottery-button
+      [lotteryId]="lottery.value()!.name"/></span></h1>
     @if (previousExtractions.status() === 'loading') {
       <p-progress-spinner class="full" ariaLabel="loading"/>
     } @else if (previousExtractions.status() === 'resolved') {

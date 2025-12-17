@@ -16,6 +16,7 @@ import { catchError, map, of } from 'rxjs';
 import { ExtractionInfo } from '../models';
 import { CurrentExtraction } from './current-extraction/current-extraction';
 import { differenceInSeconds } from 'date-fns';
+import { ShareLotteryButton } from '../share-lottery-button/share-lottery-button';
 
 @Component({
   selector: 'app-joined-lottery',
@@ -31,6 +32,7 @@ import { differenceInSeconds } from 'date-fns';
     ReactiveFormsModule,
     Button,
     CurrentExtraction,
+    ShareLotteryButton,
   ],
   templateUrl: './joined-lottery.html',
   styleUrl: './joined-lottery.scss',

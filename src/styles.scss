@@ -67,6 +67,12 @@ app-root {
   }
 }
 
+.title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
 .label-with-icon {
   display: flex;
   align-items: center;

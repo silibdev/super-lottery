@@ -1,4 +1,4 @@
-import { Component, inject, Pipe, PipeTransform, resource, signal } from '@angular/core';
+import { Component, effect, inject, Pipe, PipeTransform, resource, signal } from '@angular/core';
 import { Button, ButtonDirective, ButtonIcon } from 'primeng/button';
 import { ProgressSpinner } from 'primeng/progressspinner';
 import { JoinedLotteriesService } from './joined-lotteries.service';
@@ -8,8 +8,9 @@ import { FloatLabel } from 'primeng/floatlabel';
 import { FormControl, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { InputText } from 'primeng/inputtext';
 import { Card } from 'primeng/card';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { LotteryInfoForParticipant } from '../models';
+import { toSignal } from '@angular/core/rxjs-interop';
 
 @Pipe({
   name: 'nextExtractionTime',
@@ -58,6 +59,8 @@ class ChosenNumbersTimePipe implements PipeTransform {
 export class JoinedLotteries {
   private joinedLotteriesService = inject(JoinedLotteriesService);
   private appMessagesService = inject(AppMessagesService);
+  private route = inject(ActivatedRoute);
+  private queryParams = toSignal(this.route.queryParamMap);
 
   protected readonly nameControl = new FormControl('', {
     nonNullable: true,
@@ -75,6 +78,19 @@ export class JoinedLotteries {
       return resp!.data;
     },
   });
+
+  constructor() {
+    effect(() => {
+      const queryParams = this.queryParams();
+      if (queryParams) {
+        const lotteryId = queryParams.get('lotteryId');
+        if (lotteryId) {
+          this.joinLotteryDialogVisible.set(true);
+          this.nameControl.setValue(lotteryId);
+        }
+      }
+    });
+  }
 
   openJoinLottery() {
     this.joinLotteryDialogVisible.set(true);
