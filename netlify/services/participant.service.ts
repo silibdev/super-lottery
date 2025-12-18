@@ -1,6 +1,10 @@
-import { AppError, validateNumbers } from '../utils';
-import { isAfter, isBefore } from 'date-fns';
-import { ExtractionInfoForParticipant, LotteriesParticipant, LotteryInfoForParticipant } from '../../src/app/models';
+import { AppError, NEXT_EXTRACTION_TIME_MINUTES, validateNumbers } from '../utils';
+import { addMinutes, isAfter, isBefore } from 'date-fns';
+import {
+  ExtractionInfoForParticipant,
+  LotteriesParticipant,
+  LotteryInfoForParticipant,
+} from '../../src/app/models';
 import { LotteryRepository } from './repositories/lottery.repository';
 import { LotteryDomainService } from './lottery-domain.service';
 
@@ -165,7 +169,10 @@ export class ParticipantService {
         if (
           lastExtraction &&
           lastUpdateChosenNumbers &&
-          isBefore(new Date(lastUpdateChosenNumbers), new Date(lastExtraction))
+          isBefore(
+            new Date(lastUpdateChosenNumbers),
+            addMinutes(new Date(lastExtraction), -1 * NEXT_EXTRACTION_TIME_MINUTES),
+          )
         ) {
           let previousExtractions = lotteryForParticipant.previousExtractions;
           if (!previousExtractions) {

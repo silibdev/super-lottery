@@ -3,6 +3,7 @@ import { LotteryRepository } from './services/repositories/lottery.repository';
 import { faker } from '@faker-js/faker';
 
 const SUPER_LOTTERY_CLIENT_ID = 'super-lottery-client-id';
+export const NEXT_EXTRACTION_TIME_MINUTES = 15;
 
 export const getClientId = async (context: Context, lotteryRepository: LotteryRepository) => {
   let clientId = context.cookies.get(SUPER_LOTTERY_CLIENT_ID);
@@ -63,7 +64,7 @@ export const validateNumbers = (numbers: number[]): number[] => {
   if (new Set(numbers).size !== 10) {
     throw new AppError(400, `Invalid numbers. No duplicates allowed.`);
   }
-  return [...numbers].sort();
+  return [...numbers].sort((a, b) => a - b);
 };
 
 export class AppError extends Error {

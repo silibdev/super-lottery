@@ -143,10 +143,8 @@ export class JoinedLottery {
         clearTimeout(timeoutId);
       }
       if (!lastExtraction) return;
-      const timeoutSeconds = differenceInSeconds(
-        new Date(),
-        new Date(lastExtraction.extractionTime),
-      );
+      const timeoutSeconds =
+        differenceInSeconds(new Date(), new Date(lastExtraction.extractionTime)) - 15 * 60 * 60; // 15 minutes before the next extraction
       if (timeoutSeconds <= 0) return;
       timeoutId = setTimeout(() => this.previousExtractions.reload(), timeoutSeconds * 1000);
     });

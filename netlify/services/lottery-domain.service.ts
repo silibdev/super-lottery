@@ -1,4 +1,4 @@
-import { AppError, validateNumbers } from '../utils';
+import { AppError, NEXT_EXTRACTION_TIME_MINUTES, validateNumbers } from '../utils';
 import { addMinutes, isBefore } from 'date-fns';
 import { ExtractionInfo, LotteryInfo, LotteryOwner } from '../../src/app/models';
 import { LotteryRepository } from './repositories/lottery.repository';
@@ -82,10 +82,13 @@ export class LotteryDomainService {
     this.assertOwner(lottery, clientId);
 
     const extractionTime = new Date(extractionInfo.extractionTime);
-    if (!extractionTime || isBefore(extractionTime, addMinutes(new Date(), 15))) {
+    if (
+      !extractionTime ||
+      isBefore(extractionTime, addMinutes(new Date(), NEXT_EXTRACTION_TIME_MINUTES))
+    ) {
       throw new AppError(
         400,
-        `Invalid extraction time. It must be at least 15 minutes in the future`,
+        `Invalid extraction time. It must be at least ${NEXT_EXTRACTION_TIME_MINUTES} minutes in the future`,
       );
     }
 
@@ -137,7 +140,10 @@ export class LotteryDomainService {
     const nextExtraction = lottery.nextExtraction;
     if (
       nextExtraction &&
-      isBefore(new Date(nextExtraction.extractionTime), addMinutes(new Date(), 15))
+      isBefore(
+        new Date(nextExtraction.extractionTime),
+        addMinutes(new Date(), NEXT_EXTRACTION_TIME_MINUTES),
+      )
     ) {
       lottery.previousExtractions.push(nextExtraction);
       lottery.nextExtraction = undefined;
