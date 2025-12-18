@@ -11,6 +11,7 @@ import {
 import { ExtractionInfo } from '../../models';
 import { formatDuration, intervalToDuration, isAfter } from 'date-fns';
 import { Button } from 'primeng/button';
+import { ExtractionStats } from '../../extraction-stats/extraction-stats';
 
 @Pipe({
   name: 'toLocalDate',
@@ -24,7 +25,7 @@ export class ToLocalDatePipe implements PipeTransform {
 
 @Component({
   selector: 'app-current-extraction',
-  imports: [ToLocalDatePipe, Button],
+  imports: [ToLocalDatePipe, Button, ExtractionStats],
   templateUrl: './current-extraction.html',
   styleUrl: './current-extraction.scss',
 })
@@ -74,4 +75,6 @@ export class CurrentExtraction {
       delay,
     );
   }
+
+  protected showStats = signal(false);
 }

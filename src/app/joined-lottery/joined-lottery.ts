@@ -129,6 +129,7 @@ export class JoinedLottery {
       return undefined;
     }
     return {
+      lotteryId: lastExtraction.lotteryId,
       extractionTime: lastExtraction.extractionTime,
       winningNumbers: lastExtraction.winningNumbers,
       chosenNumbers: lastExtraction.chosenNumbers,

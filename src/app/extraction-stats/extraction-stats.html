@@ -1,0 +1,52 @@
+<p-button
+  label="Stats"
+  icon="pi pi-chart-bar"
+  [size]="smallButton() ? 'small' : undefined"
+  (onClick)="showDialog.set(true)"
+/>
+<p-dialog
+  [visible]="showDialog()"
+  (visibleChange)="showDialog.set($event)"
+  header="Extraction Statistics"
+  [modal]="true"
+  [dismissableMask]="false"
+  [draggable]="false"
+  [resizable]="false"
+  position="top"
+>
+  @if (statistics.isLoading()) {
+    <div class="loader-container">
+      <p-progress-spinner
+        class="full"
+        ariaLabel="loading"
+      />
+    </div>
+  } @else if (statistics.error()) {
+    <p-message
+      [severity]="'error'"
+      [closable]="true"
+    >Error: {{ statistics.error()?.message }}
+    </p-message
+    >
+  } @else {
+    <div class="label-with-icon">
+      <span class="pi pi-clock"></span> {{ extractionTime() | toLocalDateString }}
+    </div>
+    <div class="scoreboard-container">
+      @let stats = statistics.value()?.data || [];
+      @if (!stats.length) {
+        <p>Nobody guessed any number</p>
+      }
+      @for (stat of stats; track $index) {
+        <div class="scoreboard-entry">
+          <span class="participant">{{ stat.participantName }}</span>
+          <span class="score">
+            <p-progress-bar [value]="stat.countWinningNumbers * 10">
+              <ng-template #content>{{ stat.countWinningNumbers }}</ng-template>
+            </p-progress-bar>
+          </span>
+        </div>
+      }
+    </div>
+  }
+</p-dialog>

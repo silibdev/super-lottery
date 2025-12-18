@@ -42,3 +42,16 @@
     }
   </div>
 </div>
+<div>
+  <p-button
+    label="Stats"
+    icon="pi pi-chart-bar"
+    (onClick)="showStats.set(true)"
+  />
+  <app-extraction-stats
+    [showDialog]="showStats()"
+    (showDialogChange)="showStats.set($event)"
+    [lotteryId]="currentExtraction().lotteryId!"
+    [extractionTime]="currentExtraction().extractionTime"
+  />
+</div>

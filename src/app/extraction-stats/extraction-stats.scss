@@ -1,0 +1,37 @@
+::ng-deep .p-dialog {
+  min-width: min(25rem, 100%);
+  min-height: min(15rem, 90%);
+}
+
+:host {
+  font-size: 1rem;
+}
+
+.label-with-icon {
+  font-weight: bold;
+  font-size: 1.25rem;
+  padding-bottom: 1rem;
+
+  span.pi {
+    font-size: 1.25rem;
+  }
+}
+
+.scoreboard-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  .scoreboard-entry {
+    display: grid;
+    grid-template-columns: 35% 65%;
+    align-items: center;
+    gap: 0.5rem;
+
+    .participant {
+    }
+
+    .score {
+    }
+  }
+}
