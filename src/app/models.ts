@@ -38,6 +38,11 @@ export interface LotteryOwner {
   lotteries: string[];
 }
 
+export interface ParticipantStats {
+  participantName: string;
+  countWinningNumbers: number;
+}
+
 export interface AppMessage {
   type: 'success' | 'info' | 'warn' | 'error' | 'secondary' | 'contrast';
   description: string;

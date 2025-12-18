@@ -4,6 +4,8 @@ import {
   ExtractionInfoForParticipant,
   LotteriesParticipant,
   LotteryInfoForParticipant,
+  NumbersForExtraction,
+  ParticipantStats
 } from '../../src/app/models';
 import { LotteryRepository } from './repositories/lottery.repository';
 import { LotteryDomainService } from './lottery-domain.service';
@@ -112,6 +114,94 @@ export class ParticipantService {
         },
       });
     }
+  }
+
+  async getExtractionStats({
+    lotteryId,
+    clientId,
+    extractionId,
+  }: {
+    lotteryId: string;
+    clientId: string;
+    extractionId: string;
+  }) {
+    const decodedExtractionId = atob(extractionId);
+    // Get lottery and participants
+    const lottery = await this.lotteryDomainService.getLotteryEntityWithRollover(lotteryId);
+    const participants = await Promise.all(
+      lottery.participants.map((clientId) => this.getParticipantUpdatingLastExtraction(clientId)),
+    );
+    if (!lottery) {
+      throw new AppError(404, `Lottery ${lotteryId} not found`);
+    }
+
+    // Get extraction
+    const extraction = lottery.previousExtractions.find(
+      (e) => e.extractionTime === decodedExtractionId,
+    );
+    if (!extraction || !extraction.winningNumbers) {
+      throw new AppError(
+        404,
+        `Extraction ${decodedExtractionId} not found for lottery ${lotteryId}`,
+      );
+    }
+
+    // Get lottery with lotteryId for each participant
+    const participantSpecificLottery = participants.map((p) => {
+      const lottery = p.joinedLotteries.find((l) => l.name === lotteryId);
+      if (!lottery) return undefined;
+      return { lottery, clientId: p.participantId };
+    });
+    // Get extraction with extractionId for each participant
+    const extractionForParticipant = participantSpecificLottery
+      .map((participantLottery) => {
+        if (!participantLottery) return undefined;
+        const extraction = participantLottery.lottery.previousExtractions?.find(
+          (e) => e.extractionId === decodedExtractionId,
+        );
+        if (!extraction) return undefined;
+        return {
+          extraction,
+          clientId: participantLottery.clientId,
+        };
+      })
+      .filter((l) => !!l) as { extraction: NumbersForExtraction; clientId: string }[];
+
+    // Get participants names
+    const participantsNamesArray = await Promise.all(
+      participants.map((p) => this.lotteryRepository.getClientName(p.participantId)),
+    );
+    const participantsNameMap = participantsNamesArray.reduce(
+      (acc, name, index) => {
+        if (!name) return acc;
+        acc[participants[index].participantId] = name;
+        return acc;
+      },
+      {} as Record<string, string>,
+    );
+
+    const winningNumbersMap = extraction.winningNumbers.reduce(
+      (acc, num) => ({ ...acc, [num]: true }),
+      {} as Record<number, boolean>,
+    );
+    const extractionStats = extractionForParticipant
+      .map((participantExtraction) => {
+        const countWinningNumbers = participantExtraction.extraction.chosenNumbers.reduce(
+          (acc, num) => {
+            if (winningNumbersMap?.[num]) return acc + 1;
+            return acc;
+          },
+          0,
+        );
+        return {
+          participantName: participantsNameMap[participantExtraction.clientId],
+          countWinningNumbers,
+        } as ParticipantStats;
+      })
+      .filter((s) => !!s.countWinningNumbers)
+      .sort((a, b) => b.countWinningNumbers - a.countWinningNumbers);
+
+    return Response.json({ data: extractionStats });
   }
 
   // ---------- helpers ----------
