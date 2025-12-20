@@ -25,10 +25,21 @@
     flex-wrap: wrap;
     gap: 1rem;
 
-    .numbers {
+    .extraction-time {
+      flex: 1 1 calc(30% - 1rem);
+      min-width: 19rem;
       display: flex;
-      flex-direction: column;
+      flex-wrap: wrap;
       gap: 0.5rem;
+      align-items: center;
+
+      .label-with-icon {
+        white-space: nowrap;
+      }
+    }
+
+    app-winning-chosen-numbers {
+      flex: 1 1 calc(60% - 1rem);
     }
   }
 }

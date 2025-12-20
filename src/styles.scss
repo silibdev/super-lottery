@@ -10,9 +10,8 @@ html {
 }
 
 app-root {
-  .loader-container {
-    display: flex;
-    justify-content: center;
+  .p-dialog .loader-container {
+    overflow: hidden;
   }
 
   p-progress-spinner {
@@ -81,6 +80,7 @@ app-root {
 .label-with-icon {
   display: flex;
   align-items: center;
+  flex-wrap: nowrap;
   gap: 0.5rem;
 
   &.emp {

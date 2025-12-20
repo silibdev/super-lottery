@@ -1,31 +1,14 @@
-import {
-  Component,
-  computed,
-  input,
-  linkedSignal,
-  output,
-  Pipe,
-  PipeTransform,
-  signal,
-} from '@angular/core';
+import { Component, computed, input, linkedSignal, output, signal } from '@angular/core';
 import { ExtractionInfo } from '../../models';
 import { formatDuration, intervalToDuration, isAfter } from 'date-fns';
 import { Button } from 'primeng/button';
 import { ExtractionStats } from '../../extraction-stats/extraction-stats';
-
-@Pipe({
-  name: 'toLocalDate',
-  standalone: true,
-})
-export class ToLocalDatePipe implements PipeTransform {
-  transform(date: string): string {
-    return new Date(date).toLocaleString();
-  }
-}
+import { ToLocalDateStringPipe } from '../../utils';
+import { Badge } from 'primeng/badge';
 
 @Component({
   selector: 'app-current-extraction',
-  imports: [ToLocalDatePipe, Button, ExtractionStats],
+  imports: [Button, ExtractionStats, ToLocalDateStringPipe, Badge],
   templateUrl: './current-extraction.html',
   styleUrl: './current-extraction.scss',
 })
@@ -75,6 +58,4 @@ export class CurrentExtraction {
       delay,
     );
   }
-
-  protected showStats = signal(false);
 }

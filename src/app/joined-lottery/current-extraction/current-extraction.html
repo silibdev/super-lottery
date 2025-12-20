@@ -1,7 +1,12 @@
 <div class="time-container">
-  <div class="extraction-time">{{ currentExtraction().extractionTime | toLocalDate }}</div>
+  <div class="extraction-time">{{ currentExtraction().extractionTime | toLocalDateString }}</div>
   @if (countDown()) {
     <div class="countdown">- {{ countDown() }}</div>
+  } @else {
+    <app-extraction-stats
+      [lotteryId]="currentExtraction().lotteryId!"
+      [extractionTime]="currentExtraction().extractionTime"
+    />
   }
   @if (!skipAnimation()) {
     <p-button
@@ -13,45 +18,32 @@
   }
 </div>
 <div class="numbers-container winning">
-  <div class="label">Winning numbers</div>
+  <div class="label-with-icon emp"><span class="pi pi-trophy"></span>Winning numbers</div>
   <div
     class="numbers"
     [class.skip-animation]="skipAnimation()"
   >
     @for (number of currentExtraction().winningNumbers; track $index; let last = $last) {
-      <span
+      <p-badge
         class="number"
-        [class.correct]="chosenNumbersMap()[number] || false"
+        [value]="number"
+        [severity]="chosenNumbersMap()[number] ? 'success' : 'contrast'"
         (animationend)="last && skipAnimation.set(true)"
         (animationstart)="handleAnimationStart(number, 200)"
         (animationcancel)="handleAnimationStart(number, 0)"
-      >{{ number }}</span
-      >
+      ></p-badge>
     }
   </div>
 </div>
 <div class="numbers-container chosen">
-  <div class="label">Your numbers</div>
+  <div class="label-with-icon emp"><span class="pi pi-heart"></span>Your numbers</div>
   <div class="numbers">
     @for (number of currentExtraction().chosenNumbers; track $index) {
-      <span
+      <p-badge
         class="number"
-        [class.correct]="winningNumbersMap()[number] || false"
-      >{{ number }}</span
-      >
+        [value]="number"
+        [severity]="winningNumbersMap()[number] ? 'success' : 'contrast'"
+      ></p-badge>
     }
   </div>
-</div>
-<div>
-  <p-button
-    label="Stats"
-    icon="pi pi-chart-bar"
-    (onClick)="showStats.set(true)"
-  />
-  <app-extraction-stats
-    [showDialog]="showStats()"
-    (showDialogChange)="showStats.set($event)"
-    [lotteryId]="currentExtraction().lotteryId!"
-    [extractionTime]="currentExtraction().extractionTime"
-  />
 </div>

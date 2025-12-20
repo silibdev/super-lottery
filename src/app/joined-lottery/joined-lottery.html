@@ -1,21 +1,30 @@
 @switch (lottery.status()) {
   @case ('loading') {
-    <div class="loader-container">
-      <p-progress-spinner class="full" ariaLabel="loading"/>
-    </div>
+    <p-progress-spinner
+      class="full"
+      ariaLabel="loading"
+    />
   }
   @case ('error') {
     <app-go-home-button/>
   }
   @case ('resolved') {
-    <h1 class="title"><span>Lottery: {{ lottery.value()!.name }}</span><span class="actions"><app-share-lottery-button
-      [lotteryId]="lottery.value()!.name"/></span></h1>
+    <h1 class="title">
+      <span>Lottery: {{ lottery.value()!.name }}</span
+      ><span class="actions"><app-share-lottery-button [lotteryId]="lottery.value()!.name"/></span>
+    </h1>
     @if (previousExtractions.status() === 'loading') {
-      <p-progress-spinner class="full" ariaLabel="loading"/>
+      <p-progress-spinner
+        class="full"
+        ariaLabel="loading"
+      />
     } @else if (previousExtractions.status() === 'resolved') {
-      @if (lastExtractionForUI(); as lastExt) {
+      @if (lastExtraction(); as lastExt) {
         <p-fieldset legend="Current Extraction">
-          <app-current-extraction [currentExtraction]="lastExt" (reload)="previousExtractions.reload()"/>
+          <app-current-extraction
+            [currentExtraction]="lastExt"
+            (reload)="previousExtractions.reload()"
+          />
         </p-fieldset>
       }
     }
@@ -58,7 +67,10 @@
 
     @switch (previousExtractions.status()) {
       @case ('loading') {
-        <p-progress-spinner class="full" ariaLabel="loading"/>
+        <p-progress-spinner
+          class="full"
+          ariaLabel="loading"
+        />
       }
       @case ('resolved') {
         @let prevExtr = previousExtractions.value();
@@ -71,17 +83,20 @@
             <div class="previous-extractions-container">
               @for (extraction of prevExtr; track extraction.extractionTime) {
                 <div class="previous-extraction">
-                  <div class="label-with-icon emp">
-                    <span class="pi pi-clock"></span>{{ extraction.extractionTime }}
-                  </div>
-                  <div class="numbers">
-                    <div class="label-with-icon">
-                      <span class="pi pi-trophy"></span> {{ extraction.winningNumbers }}
+                  <div class="extraction-time">
+                    <div class="label-with-icon emp">
+                      <span class="pi pi-clock"></span>
+                      {{ extraction.extractionTime | toLocalDateString }}
                     </div>
-                    <div class="label-with-icon">
-                      <span class="pi pi-heart"></span> {{ extraction.chosenNumbers }}
-                    </div>
+                    <app-extraction-stats
+                      [lotteryId]="lottery.value()!.name"
+                      [extractionTime]="extraction.extractionTime"
+                      [smallButton]="true"
+                    />
                   </div>
+                  <app-winning-chosen-numbers
+                    [extraction]="extraction"
+                  ></app-winning-chosen-numbers>
                 </div>
               }
             </div>

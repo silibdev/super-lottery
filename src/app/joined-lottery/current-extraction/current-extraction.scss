@@ -1,6 +1,6 @@
 .time-container {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   flex-wrap: wrap;
   column-gap: 2rem;
   row-gap: 0.75rem;
@@ -25,9 +25,12 @@
     padding-top: 1.5rem;
   }
 
-  .label {
-    font-weight: bold;
-    min-width: 15rem;
+  .label-with-icon {
+    min-width: 17rem;
+
+    span.pi {
+      font-size: inherit;
+    }
   }
 
   .numbers {
@@ -35,28 +38,16 @@
     flex-wrap: wrap;
     gap: 0.5rem;
 
-    @media (max-width: 493px) {
+    @media (max-width: 510px) {
       width: 13rem;
     }
   }
 
   .number {
-    display: inline-flex;
-    justify-content: center;
-    align-items: center;
     width: 2.2rem; /* enough for up to 2 digits */
     height: 2.2rem;
     border-radius: 50%;
-    border: 1px solid;
-    font-weight: 700;
-    line-height: 1;
-    overflow: hidden;
-
-    /* Green background for correct numbers */
-    &.correct {
-      background: var(--p-button-success-background); /* emerald */
-      color: var(--p-button-success-color); /* deep green text */
-    }
+    font-size: inherit;
   }
 }
 

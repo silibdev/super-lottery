@@ -1,4 +1,4 @@
-import { Component, effect, inject, Pipe, PipeTransform, resource, signal } from '@angular/core';
+import { Component, effect, inject, resource, signal } from '@angular/core';
 import { Button, ButtonDirective, ButtonIcon } from 'primeng/button';
 import { ProgressSpinner } from 'primeng/progressspinner';
 import { JoinedLotteriesService } from './joined-lotteries.service';
@@ -9,32 +9,8 @@ import { FormControl, FormsModule, ReactiveFormsModule, Validators } from '@angu
 import { InputText } from 'primeng/inputtext';
 import { Card } from 'primeng/card';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { LotteryInfoForParticipant } from '../models';
 import { toSignal } from '@angular/core/rxjs-interop';
-
-@Pipe({
-  name: 'nextExtractionTime',
-  standalone: true,
-})
-class NextExtractionTimePipe implements PipeTransform {
-  transform(lottery: LotteryInfoForParticipant): string {
-    const extractionTime = lottery.nextExtraction?.extractionTime;
-    if (extractionTime) {
-      return new Date(extractionTime).toLocaleString();
-    }
-    return 'TBD';
-  }
-}
-
-@Pipe({
-  name: 'chosenNumbers',
-  standalone: true,
-})
-class ChosenNumbersTimePipe implements PipeTransform {
-  transform(lottery: LotteryInfoForParticipant): string {
-    return lottery.chosenNumbers.join(', ');
-  }
-}
+import { ArrayToStringPipe, ToLocalDateStringPipe } from '../utils';
 
 @Component({
   selector: 'app-joined-lotteries',
@@ -46,12 +22,12 @@ class ChosenNumbersTimePipe implements PipeTransform {
     FormsModule,
     InputText,
     ReactiveFormsModule,
-    ChosenNumbersTimePipe,
     Card,
     RouterLink,
-    NextExtractionTimePipe,
     ButtonDirective,
     ButtonIcon,
+    ToLocalDateStringPipe,
+    ArrayToStringPipe,
   ],
   templateUrl: './joined-lotteries.html',
   styleUrl: './joined-lotteries.scss',

@@ -1,13 +1,18 @@
 @switch (lottery.status()) {
   @case ('loading') {
-    <p-progress-spinner class="full" ariaLabel="loading"/>
+    <p-progress-spinner
+      class="full"
+      ariaLabel="loading"
+    />
   }
   @case ('error') {
     <app-go-home-button/>
   }
   @case ('resolved') {
-    <h1 class="title"><span>Lottery: {{ lottery.value()!.name }}</span><span class="actions"><app-share-lottery-button
-      [lotteryId]="lottery.value()!.name"/></span></h1>
+    <h1 class="title">
+      <span>Lottery: {{ lottery.value()!.name }}</span
+      ><span class="actions"><app-share-lottery-button [lotteryId]="lottery.value()!.name"/></span>
+    </h1>
     <p-fieldset legend="Next extraction">
       <form
         class="next-extraction-container"
@@ -47,7 +52,7 @@
         />
       </form>
     </p-fieldset>
-    @let prevExtr = previousExtractions();
+    @let prevExtr = lottery.value()?.previousExtractions;
     @if (prevExtr && prevExtr.length) {
       <p-fieldset
         legend="Previous extractions"
@@ -55,11 +60,17 @@
         [collapsed]="true"
       >
         <div class="previous-extractions-container">
-          @for (extraction of prevExtr;
-            track extraction.extractionTime) {
+          @for (extraction of prevExtr; track extraction.extractionTime) {
             <div class="previous-extraction">
-              <div class="label-with-icon emp"><span class="pi pi-clock"></span>{{ extraction.extractionTime }}</div>
-              <div class="label-with-icon"><span class="pi pi-trophy"></span>{{ extraction.winningNumbers }}</div>
+              <div class="label-with-icon emp">
+                <span class="pi pi-clock"></span>{{ extraction.extractionTime | toLocalDateString }}
+              </div>
+              <app-winning-chosen-numbers [extraction]="extraction"></app-winning-chosen-numbers>
+              <app-extraction-stats
+                [lotteryId]="lottery.value()!.name"
+                [extractionTime]="extraction.extractionTime"
+                [smallButton]="true"
+              ></app-extraction-stats>
             </div>
           }
         </div>

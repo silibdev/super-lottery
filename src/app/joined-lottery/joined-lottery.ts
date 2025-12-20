@@ -17,6 +17,9 @@ import { ExtractionInfo } from '../models';
 import { CurrentExtraction } from './current-extraction/current-extraction';
 import { differenceInSeconds } from 'date-fns';
 import { ShareLotteryButton } from '../share-lottery-button/share-lottery-button';
+import { ExtractionStats } from '../extraction-stats/extraction-stats';
+import { ArrayToStringPipe, ToLocalDateStringPipe } from '../utils';
+import { WinningChosenNumbers } from '../winning-chosen-numbers/winning-chosen-numbers';
 
 @Component({
   selector: 'app-joined-lottery',
@@ -33,7 +36,11 @@ import { ShareLotteryButton } from '../share-lottery-button/share-lottery-button
     Button,
     CurrentExtraction,
     ShareLotteryButton,
+    ExtractionStats,
+    ToLocalDateStringPipe,
+    WinningChosenNumbers,
   ],
+  providers: [ArrayToStringPipe],
   templateUrl: './joined-lottery.html',
   styleUrl: './joined-lottery.scss',
 })
@@ -41,6 +48,7 @@ export class JoinedLottery {
   private route = inject(ActivatedRoute);
   private joinedLotteryService = inject(JoinedLotteryService);
   private appMessagesService = inject(AppMessagesService);
+  private arrayToStringPipe = inject(ArrayToStringPipe).transform;
 
   private paramMap = toSignal(this.route.paramMap);
 
@@ -57,7 +65,7 @@ export class JoinedLottery {
         const lottery = resp!.data;
 
         this.nextExtractionForm.setValue({
-          chosenNumbers: lottery.chosenNumbers.join(', '),
+          chosenNumbers: this.arrayToStringPipe(lottery.chosenNumbers),
         });
         return lottery;
       }
@@ -114,32 +122,16 @@ export class JoinedLottery {
       );
       const lastExtraction = lotteriesInfo.pop();
       this.lastExtraction.set(lastExtraction);
-      return lotteriesInfo.map((li) => ({
-        extractionTime: new Date(li.extractionTime).toLocaleString(),
-        winningNumbers: li.winningNumbers?.join(', '),
-        chosenNumbers: li.chosenNumbers?.join(', '),
-      }));
+      return lotteriesInfo;
     },
   });
 
   protected lastExtraction = signal<ExtractionInfo | undefined>(undefined);
-  protected lastExtractionForUI = computed<ExtractionInfo | undefined>(() => {
-    const lastExtraction = this.lastExtraction();
-    if (!lastExtraction) {
-      return undefined;
-    }
-    return {
-      lotteryId: lastExtraction.lotteryId,
-      extractionTime: lastExtraction.extractionTime,
-      winningNumbers: lastExtraction.winningNumbers,
-      chosenNumbers: lastExtraction.chosenNumbers,
-    };
-  });
 
   constructor() {
     let timeoutId: number | undefined;
     effect(() => {
-      const lastExtraction = this.lastExtractionForUI();
+      const lastExtraction = this.lastExtraction();
       if (timeoutId) {
         clearTimeout(timeoutId);
       }

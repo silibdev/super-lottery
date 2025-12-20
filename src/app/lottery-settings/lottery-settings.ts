@@ -16,6 +16,9 @@ import { Fieldset } from 'primeng/fieldset';
 import { addMinutes } from 'date-fns';
 import { GoHomeButton } from '../go-home-button/go-home-button';
 import { ShareLotteryButton } from '../share-lottery-button/share-lottery-button';
+import { ArrayToStringPipe, ToLocalDateStringPipe } from '../utils';
+import { WinningChosenNumbers } from '../winning-chosen-numbers/winning-chosen-numbers';
+import { ExtractionStats } from '../extraction-stats/extraction-stats';
 
 @Component({
   selector: 'app-lottery-settings',
@@ -31,7 +34,11 @@ import { ShareLotteryButton } from '../share-lottery-button/share-lottery-button
     Fieldset,
     GoHomeButton,
     ShareLotteryButton,
+    ToLocalDateStringPipe,
+    WinningChosenNumbers,
+    ExtractionStats,
   ],
+  providers: [ArrayToStringPipe],
   templateUrl: './lottery-settings.html',
   styleUrl: './lottery-settings.scss',
 })
@@ -39,6 +46,7 @@ export class LotterySettings {
   private route = inject(ActivatedRoute);
   private lotterySettingsService = inject(LotterySettingsService);
   private appMessagesService = inject(AppMessagesService);
+  private arrayToStringPipe = inject(ArrayToStringPipe).transform;
 
   private paramMap = toSignal(this.route.paramMap);
 
@@ -57,22 +65,13 @@ export class LotterySettings {
         if (lottery.nextExtraction) {
           this.nextExtractionForm.setValue({
             extractionTime: new Date(lottery.nextExtraction.extractionTime),
-            winningNumbers: lottery.nextExtraction.winningNumbers?.join(', ') || '',
+            winningNumbers: this.arrayToStringPipe(lottery.nextExtraction.winningNumbers),
           });
         }
         return lottery;
       }
       throw new Error('Lottery ID not provided');
     },
-  });
-
-  protected previousExtractions = computed(() => {
-    const lottery = this.lottery.value();
-    const previousExtractions = lottery?.previousExtractions || [];
-    return previousExtractions.map((e) => ({
-      extractionTime: new Date(e.extractionTime).toLocaleString(),
-      winningNumbers: e.winningNumbers?.join(', '),
-    }));
   });
 
   protected savingNextExtraction = signal(false);
