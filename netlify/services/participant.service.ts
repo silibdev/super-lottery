@@ -198,7 +198,7 @@ export class ParticipantService {
           countWinningNumbers,
         } as ParticipantStats;
       })
-      .filter((s) => !!s.countWinningNumbers)
+      .filter((s) => s.countWinningNumbers > 0)
       .sort((a, b) => b.countWinningNumbers - a.countWinningNumbers);
 
     return Response.json({ data: extractionStats });
