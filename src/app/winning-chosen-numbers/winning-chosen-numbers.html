@@ -1,0 +1,26 @@
+<div class="label-with-icon">
+  <span class="pi pi-trophy"></span>
+  <div class="numbers">
+    @for (num of extraction().winningNumbers; track $index) {
+      <p-badge
+        [value]="num"
+        size="small"
+        [severity]="chosenNumbersMap()[num] ? 'success' : 'contrast'"
+      />
+    }
+  </div>
+</div>
+@if (extraction().chosenNumbers?.length) {
+  <div class="label-with-icon">
+    <span class="pi pi-heart"></span>
+    <div class="numbers">
+      @for (num of extraction().chosenNumbers; track $index) {
+        <p-badge
+          [value]="num"
+          size="small"
+          [severity]="winningNumbersMap()[num] ? 'success' : 'contrast'"
+        />
+      }
+    </div>
+  </div>
+}
