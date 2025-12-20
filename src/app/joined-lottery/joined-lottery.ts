@@ -67,6 +67,8 @@ export class JoinedLottery {
         this.nextExtractionForm.setValue({
           chosenNumbers: this.arrayToStringPipe(lottery.chosenNumbers),
         });
+
+        lottery.previousExtractions?.sort((a, b) => b.extractionId.localeCompare(a.extractionId));
         return lottery;
       }
       throw new Error('Lottery ID not provided');
@@ -120,7 +122,7 @@ export class JoinedLottery {
           } as ExtractionInfo;
         }),
       );
-      const lastExtraction = lotteriesInfo.pop();
+      const lastExtraction = lotteriesInfo.shift();
       this.lastExtraction.set(lastExtraction);
       return lotteriesInfo;
     },

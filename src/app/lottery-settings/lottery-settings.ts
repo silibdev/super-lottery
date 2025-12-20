@@ -68,6 +68,11 @@ export class LotterySettings {
             winningNumbers: this.arrayToStringPipe(lottery.nextExtraction.winningNumbers),
           });
         }
+
+        lottery.previousExtractions.sort((a, b) =>
+          b.extractionTime.localeCompare(a.extractionTime),
+        );
+
         return lottery;
       }
       throw new Error('Lottery ID not provided');
