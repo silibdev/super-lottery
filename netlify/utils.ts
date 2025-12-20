@@ -15,6 +15,9 @@ export const getClientId = async (context: Context, lotteryRepository: LotteryRe
       httpOnly: true,
       secure: true,
     });
+  }
+  const clientName = await lotteryRepository.getClientName(clientId);
+  if (!clientName) {
     const randomUsername =
       `${faker.color.human()} ${faker.hacker.abbreviation()} ${faker.animal.type()}`
         .split(' ')
