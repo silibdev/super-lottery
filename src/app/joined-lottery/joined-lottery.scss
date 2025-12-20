@@ -26,8 +26,7 @@
     gap: 1rem;
 
     .extraction-time {
-      flex: 1 1 calc(30% - 1rem);
-      min-width: 19rem;
+      width: 19rem;
       display: flex;
       flex-wrap: wrap;
       gap: 0.5rem;
@@ -39,7 +38,7 @@
     }
 
     app-winning-chosen-numbers {
-      flex: 1 1 calc(60% - 1rem);
+      flex: 1 1 auto;
     }
   }
 }
