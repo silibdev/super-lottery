@@ -16,7 +16,13 @@ const handler = async (req: Request, context: Context) => {
   switch (req.method) {
     case 'POST':
       const lotteryId = getLotteryIdFromUrl(req.url, context)!;
-      const extractionInfo: ExtractionInfo = await req.json();
+      const { chosenNumbers, winningNumbers, extractionTime } = await req.json();
+      const extractionInfo: ExtractionInfo = {
+        chosenNumbers,
+        winningNumbers,
+        extractionTime,
+        lotteryId,
+      };
       return await lotteryDomainService.createNextExtraction({
         extractionInfo,
         clientId,

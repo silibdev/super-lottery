@@ -15,8 +15,8 @@ export class LotteryDomainService {
 
     const lotteries = await Promise.all(
       owner.lotteries.map(async (lotteryId) => {
-        const lottery = await this.getLotteryEntityWithRollover(lotteryId);
-        await this.getParticipantsNames(lottery);
+        const lottery = await this.getLotteryForSure(lotteryId);
+        await this.addParticipantsNamesToLottery(lottery);
         return lottery;
       }),
     );
@@ -27,15 +27,15 @@ export class LotteryDomainService {
   // Owner-facing: create a new lottery
   async createLottery({ lotteryName, clientId }: { clientId: string; lotteryName: string }) {
     if (!lotteryName) {
-      return Response.json({ data: 'Missing name' }, { status: 400 });
+      throw new AppError(400, 'Missing name');
     }
     if (!lotteryName.match(/^[A-Za-z0-9]+(-[A-Za-z0-9]+)*$/)) {
-      return Response.json({ data: `${lotteryName} is an invalid name` }, { status: 400 });
+      throw new AppError(400, `${lotteryName} is an invalid name`);
     }
 
     const existing = await this.lotteryRepository.getLottery(lotteryName);
     if (existing) {
-      return Response.json({ data: `Lottery ${lotteryName} already exists` }, { status: 400 });
+      throw new AppError(400, `Lottery ${lotteryName} already exists`);
     }
 
     let owner = await this.lotteryRepository.getOwner(clientId);
@@ -56,14 +56,14 @@ export class LotteryDomainService {
       this.lotteryRepository.saveLottery(lotteryName, lottery),
     ]);
 
-    return Response.json({ data: 'ok' });
+    return Response.json({ data: lottery });
   }
 
   // Owner-facing: get single lottery (authorized)
   async getLottery({ lotteryId, clientId }: { lotteryId: string; clientId: string }) {
-    const lottery = await this.getLotteryEntityWithRollover(lotteryId);
-    this.assertOwner(lottery, clientId);
-    await this.getParticipantsNames(lottery);
+    const lottery = await this.getLotteryForSure(lotteryId);
+    await this.addParticipantsNamesToLottery(lottery);
+    this.removeOwnerIfNecessary(lottery, clientId);
     return Response.json({ data: lottery });
   }
 
@@ -77,7 +77,7 @@ export class LotteryDomainService {
     clientId: string;
     lotteryId: string;
   }) {
-    const lottery = await this.getLotteryEntityWithRollover(lotteryId);
+    const lottery = await this.getLotteryForSure(lotteryId);
 
     this.assertOwner(lottery, clientId);
 
@@ -95,30 +95,15 @@ export class LotteryDomainService {
     extractionInfo.winningNumbers = validateNumbers(extractionInfo.winningNumbers!);
     lottery.nextExtraction = extractionInfo;
 
-    // Preserve original behavior of setting owner
-    lottery.owner = clientId;
-
     await this.lotteryRepository.saveLottery(lotteryId, lottery);
 
-    await this.getParticipantsNames(lottery);
+    await this.addParticipantsNamesToLottery(lottery);
 
+    this.removeOwnerIfNecessary(lottery, clientId);
     return Response.json({ data: lottery });
   }
 
-  async getLotteryEntityWithRollover(lotteryId: string): Promise<LotteryInfo> {
-    const lottery = await this.lotteryRepository.getLottery(lotteryId);
-    if (!lottery) {
-      throw new AppError(404, `Lottery ${lotteryId} not found`);
-    }
-    const updated = await this.finalizeDueNextExtraction(lottery);
-    if (updated) {
-      await this.lotteryRepository.saveLottery(lotteryId, lottery);
-    }
-
-    return lottery;
-  }
-
-  private async getParticipantsNames(lottery: LotteryInfo): Promise<LotteryInfo> {
+  private async addParticipantsNamesToLottery(lottery: LotteryInfo): Promise<LotteryInfo> {
     const participantNames = await Promise.all(
       lottery.participants.map((clientId) => this.lotteryRepository.getClientName(clientId)),
     );
@@ -135,20 +120,18 @@ export class LotteryDomainService {
     }
   }
 
-  // Promote nextExtraction to previous if within the 15-minute window
-  private async finalizeDueNextExtraction(lottery: LotteryInfo): Promise<boolean> {
-    const nextExtraction = lottery.nextExtraction;
-    if (
-      nextExtraction &&
-      isBefore(
-        new Date(nextExtraction.extractionTime),
-        addMinutes(new Date(), NEXT_EXTRACTION_TIME_MINUTES),
-      )
-    ) {
-      lottery.previousExtractions.push(nextExtraction);
-      lottery.nextExtraction = undefined;
-      return true;
+  private async getLotteryForSure(lotteryId: string) {
+    const lottery = await this.lotteryRepository.getLottery(lotteryId);
+    if (!lottery) {
+      throw new AppError(404, `Lottery ${lotteryId} not found`);
     }
-    return false;
+    return lottery;
+  }
+
+  private removeOwnerIfNecessary(lottery: LotteryInfo, clientId: string) {
+    if (lottery.owner != clientId) {
+      lottery.owner = undefined;
+    }
+    return lottery;
   }
 }

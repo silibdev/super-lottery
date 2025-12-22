@@ -2,7 +2,6 @@ import type { Config, Context } from '@netlify/functions';
 import { getClientId, getJoinedLotteryIdFromUrl, handleRequest } from '../utils';
 import { ParticipantService } from '../services/participant.service';
 import { LotteryRepository } from '../services/repositories/lottery.repository';
-import { LotteryDomainService } from '../services/lottery-domain.service';
 
 export const config: Config = {
   path: ['/api/joined-lotteries', '/api/joined-lotteries/:lotteryId'],
@@ -13,8 +12,7 @@ export default async (req: Request, context: Context) => handleRequest(req, cont
 const handler = async (req: Request, context: Context) => {
   const lotteryRepository = new LotteryRepository();
   const clientId = await getClientId(context, lotteryRepository);
-  const lotteryDomainService = new LotteryDomainService(lotteryRepository);
-  const participantService = new ParticipantService(lotteryRepository, lotteryDomainService);
+  const participantService = new ParticipantService(lotteryRepository);
 
   const lotteryId = getJoinedLotteryIdFromUrl(req.url, context);
 
