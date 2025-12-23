@@ -7,25 +7,29 @@ export class LotteryDomainService {
   constructor(private lotteryRepository: LotteryRepository) {}
 
   // Owner-facing: load all lotteries for an owner
-  async loadLotteries({ clientId }: { clientId: string }) {
+  async loadLotteries({ clientId }: { clientId: string }): Promise<LotteryInfo[]> {
     const owner = await this.lotteryRepository.getOwner(clientId);
     if (!owner) {
-      return Response.json({ data: [] });
+      return [];
     }
 
-    const lotteries = await Promise.all(
+    return await Promise.all(
       owner.lotteries.map(async (lotteryId) => {
         const lottery = await this.getLotteryForSure(lotteryId);
         await this.addParticipantsNamesToLottery(lottery);
         return lottery;
       }),
     );
-
-    return Response.json({ data: lotteries });
   }
 
   // Owner-facing: create a new lottery
-  async createLottery({ lotteryName, clientId }: { clientId: string; lotteryName: string }) {
+  async createLottery({
+    lotteryName,
+    clientId,
+  }: {
+    clientId: string;
+    lotteryName: string;
+  }): Promise<LotteryInfo> {
     if (!lotteryName) {
       throw new AppError(400, 'Missing name');
     }
@@ -56,15 +60,21 @@ export class LotteryDomainService {
       this.lotteryRepository.saveLottery(lotteryName, lottery),
     ]);
 
-    return Response.json({ data: lottery });
+    return lottery;
   }
 
   // Owner-facing: get single lottery (authorized)
-  async getLottery({ lotteryId, clientId }: { lotteryId: string; clientId: string }) {
+  async getLottery({
+    lotteryId,
+    clientId,
+  }: {
+    lotteryId: string;
+    clientId: string;
+  }): Promise<LotteryInfo> {
     const lottery = await this.getLotteryForSure(lotteryId);
     await this.addParticipantsNamesToLottery(lottery);
     this.removeOwnerIfNecessary(lottery, clientId);
-    return Response.json({ data: lottery });
+    return lottery;
   }
 
   // Owner-facing: schedule next extraction
@@ -76,7 +86,7 @@ export class LotteryDomainService {
     extractionInfo: ExtractionInfo;
     clientId: string;
     lotteryId: string;
-  }) {
+  }): Promise<LotteryInfo> {
     const lottery = await this.getLotteryForSure(lotteryId);
 
     this.assertOwner(lottery, clientId);
@@ -100,7 +110,7 @@ export class LotteryDomainService {
     await this.addParticipantsNamesToLottery(lottery);
 
     this.removeOwnerIfNecessary(lottery, clientId);
-    return Response.json({ data: lottery });
+    return lottery;
   }
 
   private async addParticipantsNamesToLottery(lottery: LotteryInfo): Promise<LotteryInfo> {

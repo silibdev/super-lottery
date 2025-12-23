@@ -82,10 +82,12 @@ export class AppError extends Error {
 export async function handleRequest(
   req: Request,
   context: Context,
-  handler: (req: Request, ctx: Context) => Promise<unknown>,
+  handler: (req: Request, ctx: Context) => Promise<Response | unknown>,
 ) {
   try {
-    return await handler(req, context);
+    const response = await handler(req, context);
+    if (response instanceof Response) return response;
+    return Response.json({ data: response });
   } catch (e) {
     if (e instanceof AppError) {
       return Response.json({ data: e.message }, { status: e.code });

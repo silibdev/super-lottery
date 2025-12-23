@@ -14,12 +14,10 @@ const handler = async (req: Request, context: Context) => {
 
   switch (req.method) {
     case 'GET':
-      const name = await lotteryRepository.getClientName(clientId);
-      return Response.json({ data: name });
+      return await lotteryRepository.getClientName(clientId);
     case 'PUT':
       const { name: newName } = await req.json();
-      await lotteryRepository.saveClientName(clientId, newName);
-      return Response.json({ data: newName });
+      return await lotteryRepository.saveClientName(clientId, newName);
   }
   return new Response(null, { status: 405 });
 };

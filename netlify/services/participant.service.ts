@@ -1,8 +1,10 @@
 import { AppError, validateNumbers } from '../utils';
 import { isBefore } from 'date-fns';
 import {
+  ExtractionInfo,
   ExtractionInfoForParticipant,
   LotteriesParticipant,
+  LotteryInfo,
   LotteryInfoForParticipant,
   NumbersForExtraction,
   ParticipantStats
@@ -12,20 +14,30 @@ import { LotteryRepository } from './repositories/lottery.repository';
 export class ParticipantService {
   constructor(private lotteryRepository: LotteryRepository) {}
 
-  async getJoinedLotteries({ clientId }: { clientId: string }) {
+  async getJoinedLotteries({
+    clientId,
+  }: {
+    clientId: string;
+  }): Promise<LotteryInfoForParticipant[]> {
     try {
       const participant = await this.getParticipantForSure(clientId);
       const participantWithLotteriesInfo = await this.participantWithFullLotteriesInfo(participant);
-      return Response.json({ data: participantWithLotteriesInfo.joinedLotteries });
+      return participantWithLotteriesInfo.joinedLotteries;
     } catch (e) {
       if (e instanceof AppError && e.code === 404) {
-        return Response.json({ data: [] });
+        return [];
       }
       throw e;
     }
   }
 
-  async joinLottery({ clientId, lotteryName }: { clientId: string; lotteryName: any }) {
+  async joinLottery({
+    clientId,
+    lotteryName,
+  }: {
+    clientId: string;
+    lotteryName: any;
+  }): Promise<LotteriesParticipant> {
     const lottery = await this.getLotteryForSure(lotteryName);
 
     let participant = await this.lotteryRepository.getParticipant(clientId);
@@ -48,19 +60,23 @@ export class ParticipantService {
       this.lotteryRepository.saveParticipant(clientId, participant),
     ]);
 
-    const participantWithLotteriesInfo = await this.participantWithFullLotteriesInfo(participant);
-    return Response.json({ data: participantWithLotteriesInfo });
+    return this.participantWithFullLotteriesInfo(participant);
   }
 
-  async getJoinedLottery({ lotteryId, clientId }: { lotteryId: string; clientId: string }) {
+  async getJoinedLottery({
+    lotteryId,
+    clientId,
+  }: {
+    lotteryId: string;
+    clientId: string;
+  }): Promise<LotteryInfoForParticipant> {
     const participant = await this.getParticipantForSure(clientId);
-    const lotteryForParticipant = participant.joinedLotteries.find((l) => l.name === lotteryId);
-    if (!lotteryForParticipant) {
-      return Response.json({ data: `You did not joined lottery ${lotteryId}` }, { status: 403 });
-    }
-    const extendedLotteryInfo =
-      await this.lotteryForParticipantWithFullNextExtractionInfo(lotteryForParticipant);
-    return Response.json({ data: extendedLotteryInfo });
+    const lotteryForParticipant = await this.getLotteryForParticipantForSure(
+      participant,
+      lotteryId,
+      clientId,
+    );
+    return this.lotteryForParticipantWithFullNextExtractionInfo(lotteryForParticipant);
   }
 
   async saveChosenNumbers({
@@ -71,16 +87,17 @@ export class ParticipantService {
     clientId: string;
     lotteryId: string;
     chosenNumbers: number[];
-  }) {
+  }): Promise<LotteriesParticipant> {
     const participant = await this.getParticipantForSure(clientId);
-    const lotteryForParticipant = participant.joinedLotteries.find((l) => l.name === lotteryId);
-    if (!lotteryForParticipant) {
-      return Response.json({ data: `You did not joined lottery ${lotteryId}` }, { status: 403 });
-    }
+    const lotteryForParticipant = await this.getLotteryForParticipantForSure(
+      participant,
+      lotteryId,
+      clientId,
+    );
     lotteryForParticipant.chosenNumbers = validateNumbers(chosenNumbers);
     lotteryForParticipant.lastUpdateChosenNumbers = new Date().toISOString();
     await this.lotteryRepository.saveParticipant(clientId, participant);
-    return Response.json({ data: participant });
+    return participant;
   }
 
   async getExtraction({
@@ -91,7 +108,7 @@ export class ParticipantService {
     lotteryId: string;
     clientId: string;
     extractionId: string;
-  }) {
+  }): Promise<ExtractionInfo> {
     const lottery = await this.getLotteryForSure(lotteryId);
     const decodedExtractionId = atob(extractionId);
     const extraction = lottery.previousExtractions.find(
@@ -104,7 +121,7 @@ export class ParticipantService {
     if (isBefore(new Date(), new Date(extraction.extractionTime))) {
       extraction.winningNumbers = undefined;
     }
-    return Response.json({ data: extraction });
+    return extraction;
   }
 
   async getExtractionStats({
@@ -115,7 +132,7 @@ export class ParticipantService {
     lotteryId: string;
     clientId: string;
     extractionId: string;
-  }) {
+  }): Promise<ParticipantStats[]> {
     const decodedExtractionId = atob(extractionId);
     // Get lottery and participants
     const lottery = await this.getLotteryForSure(lotteryId);
@@ -189,7 +206,7 @@ export class ParticipantService {
       .filter((s) => s.countWinningNumbers > 0)
       .sort((a, b) => b.countWinningNumbers - a.countWinningNumbers);
 
-    return Response.json({ data: extractionStats });
+    return extractionStats;
   }
 
   // ---------- helpers ----------
@@ -206,7 +223,7 @@ export class ParticipantService {
 
   private async lotteryForParticipantWithFullNextExtractionInfo(
     lotteryForParticipant: LotteryInfoForParticipant,
-  ) {
+  ): Promise<LotteryInfoForParticipant> {
     const lottery = await this.getLotteryForSure(lotteryForParticipant.name);
     const nextExtraction: ExtractionInfoForParticipant | undefined = lottery.nextExtraction && {
       lotteryId: lottery.nextExtraction.lotteryId,
@@ -234,7 +251,7 @@ export class ParticipantService {
     return lotteryForParticipantFull;
   }
 
-  private async getLotteryForSure(lotteryId: string) {
+  private async getLotteryForSure(lotteryId: string): Promise<LotteryInfo> {
     const lottery = await this.lotteryRepository.getLottery(lotteryId);
     if (!lottery) {
       throw new AppError(404, `Lottery ${lotteryId} not found`);
@@ -242,11 +259,23 @@ export class ParticipantService {
     return lottery;
   }
 
-  private async getParticipantForSure(clientId: string) {
+  private async getParticipantForSure(clientId: string): Promise<LotteriesParticipant> {
     const participant = await this.lotteryRepository.getParticipant(clientId);
     if (!participant) {
       throw new AppError(404, `Participant not found`);
     }
     return participant;
+  }
+
+  private async getLotteryForParticipantForSure(
+    participant: LotteriesParticipant,
+    lotteryId: string,
+    clientId: string,
+  ): Promise<LotteryInfoForParticipant> {
+    const lotteryForParticipant = participant.joinedLotteries.find((l) => l.name === lotteryId);
+    if (!lotteryForParticipant) {
+      throw new AppError(403, `You did not joined lottery ${lotteryId}`);
+    }
+    return lotteryForParticipant;
   }
 }

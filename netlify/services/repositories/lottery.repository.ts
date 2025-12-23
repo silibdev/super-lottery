@@ -76,8 +76,9 @@ export class LotteryRepository {
     return await this.clientNamesStore().get(clientId, { type: 'text' });
   }
 
-  async saveClientName(clientId: string, name: string): Promise<void> {
+  async saveClientName(clientId: string, name: string): Promise<string> {
     await this.clientNamesStore().set(clientId, name);
+    return name;
   }
 
   // Promote nextExtraction to previous if within the 15-minute window
