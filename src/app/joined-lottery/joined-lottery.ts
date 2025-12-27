@@ -15,7 +15,7 @@ import { Button } from 'primeng/button';
 import { catchError, map, of } from 'rxjs';
 import { ExtractionInfo } from '../models';
 import { CurrentExtraction } from './current-extraction/current-extraction';
-import { differenceInSeconds } from 'date-fns';
+import { addMinutes, differenceInSeconds } from 'date-fns';
 import { ShareLotteryButton } from '../share-lottery-button/share-lottery-button';
 import { ExtractionStats } from '../extraction-stats/extraction-stats';
 import { ArrayToStringPipe, ToLocalDateStringPipe } from '../utils';
@@ -102,7 +102,7 @@ export class JoinedLottery {
             .split(',')
             .filter((n) => n.trim() !== '')
             .map((n) => parseInt(n.trim(), 10))
-            .filter((n) => !!n).length,
+            .filter((n) => !Number.isNaN(n)).length,
       ),
       catchError((err) => of(null)),
     );
@@ -131,17 +131,22 @@ export class JoinedLottery {
   protected lastExtraction = signal<ExtractionInfo | undefined>(undefined);
 
   constructor() {
-    let timeoutId: number | undefined;
+    let intervalId: number | undefined;
     effect(() => {
       const lastExtraction = this.lastExtraction();
-      if (timeoutId) {
-        clearTimeout(timeoutId);
+      if (intervalId) {
+        clearInterval(intervalId);
+        intervalId = undefined;
       }
       if (!lastExtraction) return;
-      const timeoutSeconds =
-        differenceInSeconds(new Date(), new Date(lastExtraction.extractionTime)) - 15 * 60 * 60; // 15 minutes before the next extraction
-      if (timeoutSeconds <= 0) return;
-      timeoutId = setTimeout(() => this.previousExtractions.reload(), timeoutSeconds * 1000);
+      const nextExtractionMinus15Minutes = addMinutes(new Date(lastExtraction.extractionTime), -15);
+      intervalId = setInterval(() => {
+        if (differenceInSeconds(new Date(), nextExtractionMinus15Minutes) <= 0) {
+          this.previousExtractions.reload();
+          clearInterval(intervalId);
+          intervalId = undefined;
+        }
+      }, 5000);
     });
   }
 

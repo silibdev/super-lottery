@@ -113,7 +113,7 @@ export class LotterySettings {
             .split(',')
             .filter((n) => n.trim() !== '')
             .map((n) => parseInt(n.trim(), 10))
-            .filter((n) => !!n).length,
+            .filter((n) => !Number.isNaN(n)).length,
       ),
       catchError((err) => of(null)),
     );
