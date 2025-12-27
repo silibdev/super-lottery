@@ -1,5 +1,5 @@
 import { AppError, validateNumbers } from '../utils';
-import { isBefore } from 'date-fns';
+import { isBefore, parseISO } from 'date-fns';
 import {
   ExtractionInfo,
   ExtractionInfoForParticipant,
@@ -7,7 +7,7 @@ import {
   LotteryInfo,
   LotteryInfoForParticipant,
   NumbersForExtraction,
-  ParticipantStats
+  ParticipantStats,
 } from '../../src/app/models';
 import { LotteryRepository } from './repositories/lottery.repository';
 
@@ -118,7 +118,7 @@ export class ParticipantService {
       throw new AppError(404, `Extraction ${extractionId} not found`);
     }
 
-    if (isBefore(new Date(), new Date(extraction.extractionTime))) {
+    if (isBefore(new Date(), parseISO(extraction.extractionTime))) {
       extraction.winningNumbers = undefined;
     }
     return extraction;

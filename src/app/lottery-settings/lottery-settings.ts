@@ -13,7 +13,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { catchError, map, of } from 'rxjs';
 import { AsyncPipe } from '@angular/common';
 import { Fieldset } from 'primeng/fieldset';
-import { addMinutes } from 'date-fns';
+import { addMinutes, parseISO } from 'date-fns';
 import { GoHomeButton } from '../go-home-button/go-home-button';
 import { ShareLotteryButton } from '../share-lottery-button/share-lottery-button';
 import { ArrayToStringPipe, ToLocalDateStringPipe } from '../utils';
@@ -64,7 +64,7 @@ export class LotterySettings {
 
         if (lottery.nextExtraction) {
           this.nextExtractionForm.setValue({
-            extractionTime: new Date(lottery.nextExtraction.extractionTime),
+            extractionTime: parseISO(lottery.nextExtraction.extractionTime),
             winningNumbers: this.arrayToStringPipe(lottery.nextExtraction.winningNumbers),
           });
         }

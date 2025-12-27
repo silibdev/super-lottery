@@ -1,7 +1,7 @@
 import { LotteriesParticipant, LotteryInfo, LotteryOwner } from '../../../src/app/models';
 import { getStore } from '@netlify/blobs';
 import { NEXT_EXTRACTION_TIME_MINUTES } from '../../utils';
-import { addMinutes, isBefore } from 'date-fns';
+import { addMinutes, isBefore, parseISO } from 'date-fns';
 
 export class LotteryRepository {
   private readonly lotteriesStore;
@@ -87,7 +87,7 @@ export class LotteryRepository {
     if (
       nextExtraction &&
       isBefore(
-        new Date(nextExtraction.extractionTime),
+        parseISO(nextExtraction.extractionTime),
         addMinutes(new Date(), NEXT_EXTRACTION_TIME_MINUTES),
       )
     ) {

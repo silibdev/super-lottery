@@ -1,5 +1,5 @@
 import { AppError, NEXT_EXTRACTION_TIME_MINUTES, validateNumbers } from '../utils';
-import { addMinutes, isBefore } from 'date-fns';
+import { addMinutes, isBefore, parseISO } from 'date-fns';
 import { ExtractionInfo, LotteryInfo, LotteryOwner } from '../../src/app/models';
 import { LotteryRepository } from './repositories/lottery.repository';
 
@@ -91,7 +91,7 @@ export class LotteryDomainService {
 
     this.assertOwner(lottery, clientId);
 
-    const extractionTime = new Date(extractionInfo.extractionTime);
+    const extractionTime = parseISO(extractionInfo.extractionTime);
     if (
       !extractionTime ||
       isBefore(extractionTime, addMinutes(new Date(), NEXT_EXTRACTION_TIME_MINUTES))

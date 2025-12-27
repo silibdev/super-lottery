@@ -15,7 +15,7 @@ import { Button } from 'primeng/button';
 import { catchError, map, of } from 'rxjs';
 import { ExtractionInfo } from '../models';
 import { CurrentExtraction } from './current-extraction/current-extraction';
-import { addMinutes, differenceInSeconds } from 'date-fns';
+import { addMinutes, differenceInSeconds, parseISO } from 'date-fns';
 import { ShareLotteryButton } from '../share-lottery-button/share-lottery-button';
 import { ExtractionStats } from '../extraction-stats/extraction-stats';
 import { ArrayToStringPipe, ToLocalDateStringPipe } from '../utils';
@@ -86,7 +86,7 @@ export class JoinedLottery {
     if (!nextExtraction) {
       return 'TBD';
     }
-    return new Date(nextExtraction.extractionTime).toLocaleString();
+    return parseISO(nextExtraction.extractionTime).toLocaleString();
   });
 
   protected readonly nextExtractionForm = inject(FormBuilder).nonNullable.group({
@@ -139,7 +139,7 @@ export class JoinedLottery {
         intervalId = undefined;
       }
       if (!lastExtraction) return;
-      const nextExtractionMinus15Minutes = addMinutes(new Date(lastExtraction.extractionTime), -15);
+      const nextExtractionMinus15Minutes = addMinutes(parseISO(lastExtraction.extractionTime), -15);
       intervalId = setInterval(() => {
         if (differenceInSeconds(new Date(), nextExtractionMinus15Minutes) <= 0) {
           this.previousExtractions.reload();
