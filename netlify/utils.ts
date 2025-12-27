@@ -1,6 +1,7 @@
 import type { Context } from '@netlify/functions';
 import { LotteryRepository } from './services/repositories/lottery.repository';
 import { faker } from '@faker-js/faker';
+import { addYears } from 'date-fns';
 
 const SUPER_LOTTERY_CLIENT_ID = 'super-lottery-client-id';
 export const NEXT_EXTRACTION_TIME_MINUTES = 15;
@@ -14,6 +15,7 @@ export const getClientId = async (context: Context, lotteryRepository: LotteryRe
       value: clientId,
       httpOnly: true,
       secure: true,
+      expires: addYears(new Date(), 10),
     });
   }
   const clientName = await lotteryRepository.getClientName(clientId);
